@@ -443,6 +443,7 @@
         z-index: 100;
         opacity: 0;
         visibility: hidden;
+        pointer-events: none; /* Prevents ghost clicks on fading out elements */
         transform: translateY(-10px);
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         max-height: 260px;
@@ -468,6 +469,7 @@
       .custom-select-wrapper.open .custom-select-menu {
         opacity: 1;
         visibility: visible;
+        pointer-events: auto; /* Re-enables clicks only when fully open */
         transform: translateY(0);
       }
       .cs-item {
