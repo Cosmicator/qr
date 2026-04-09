@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced Gradient QR Generator</title>
+
+    <!-- Include the QR Code Styling library -->
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #e9ecef;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        background-color: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        width: 100%;
+        max-width: 500px;
+      }
+
+      h2 {
+        color: #333;
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+
+      input[type="text"],
+      select {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 16px;
+        outline: none;
+        transition: border 0.3s;
+      }
+
+      input[type="text"]:focus,
+      select:focus {
+        border-color: #007bff;
+      }
+
+      .controls-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+      }
+
+      .controls-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+      }
+
+      /* Dynamic Color Stops Styling */
+      .color-stops-wrapper {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+      }
+
+      .color-stop-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        background: white;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid #eee;
+      }
+
+      input[type="color"] {
+        width: 40px;
+        height: 40px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        padding: 0;
+        background: none;
+      }
+
+      input[type="range"] {
+        flex: 1;
+        cursor: pointer;
+      }
+
+      .offset-display {
+        font-size: 14px;
+        color: #555;
+        width: 45px;
+        text-align: right;
+      }
+
+      .btn-remove {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .btn-remove:hover {
+        background-color: #c82333;
+      }
+
+      .btn-add-color {
+        background-color: #6c757d;
+        margin-top: 5px;
+        padding: 8px;
+        font-size: 14px;
+      }
+
+      .btn-add-color:hover {
+        background-color: #5a6268;
+      }
+
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        font-size: 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        width: 100%;
+        transition: background 0.3s;
+        margin-bottom: 10px;
+        font-weight: bold;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      .btn-download {
+        background-color: #28a745;
+        display: none;
+      }
+      .btn-download:hover {
+        background-color: #218838;
+      }
+
+      #qrcode {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 250px;
+      }
+
+      #qrcode canvas {
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Advanced Gradient QR</h2>
+
+      <div class="form-group">
+        <label>QR Code Content (Text/URL)</label>
+        <input type="text" id="text-input" placeholder="https://example.com" />
+      </div>
+
+      <div class="controls-row">
+        <div class="form-group">
+          <label>Gradient Type</label>
+          <select id="grad-type" onchange="toggleAngle()">
+            <option value="linear">Linear</option>
+            <option value="radial">Radial</option>
+          </select>
+        </div>
+        <div class="form-group" id="angle-group">
+          <label>Angle: <span id="angle-display">45°</span></label>
+          <input
+            type="range"
+            id="grad-angle"
+            min="0"
+            max="360"
+            value="45"
+            style="width: 100%; margin-top: 10px"
+            oninput="
+              document.getElementById('angle-display').innerText =
+                this.value + '°'
+            "
+          />
+        </div>
+      </div>
+
+      <div class="color-stops-wrapper">
+        <label>Gradient Colors & Points</label>
+        <div id="stops-container">
+          <!-- Color stops will be injected here via JS -->
+        </div>
+        <button class="btn-add-color" onclick="addColorStop('#00c6ff', 50)">
+          + Add Another Color
+        </button>
+      </div>
+
+      <button onclick="generateQR()">Generate QR Code</button>
+      <button onclick="downloadQR()" class="btn-download" id="download-btn">
+        Download PNG
+      </button>
+
+      <div id="qrcode"></div>
+    </div>
+
+    <script>
+      // =========================
+      // 1. GLOBAL QR OBJECT
+      // =========================
+      const qrCode = new QRCodeStyling({
+        width: 250,
+        height: 250,
+        type: "canvas",
+        data: "",
+        dotsOptions: {
+          type: "rounded",
+        },
+        backgroundOptions: {
+          color: "#ffffff",
+        },
+        imageOptions: {
+          crossOrigin: "anonymous",
+          margin: 10,
+        },
+      });
+
+      // =========================
+      // 2. INITIAL PAGE SETUP
+      // =========================
+      window.onload = () => {
+        addColorStop("#0072ff", 0);
+        addColorStop("#00c6ff", 100);
+      };
+
+      // =========================
+      // 3. EVENT LISTENERS
+      // =========================
+      document
+        .getElementById("text-input")
+        .addEventListener("keypress", function (event) {
+          if (event.key === "Enter") {
+            generateQR();
+          }
+        });
+
+      // =========================
+      // 4. UI HELPER FUNCTIONS
+      // =========================
+
+      function toggleAngle() {
+        const type = document.getElementById("grad-type").value;
+        const angleGroup = document.getElementById("angle-group");
+
+        angleGroup.style.visibility = type === "linear" ? "visible" : "hidden";
+      }
+
+      function addColorStop(defaultColor = "#000000", defaultOffset = 100) {
+        const container = document.getElementById("stops-container");
+
+        const row = document.createElement("div");
+        row.className = "color-stop-row";
+
+        row.innerHTML = `
+      <input type="color" class="stop-color" value="${defaultColor}">
+      <input type="range" class="stop-offset" min="0" max="100" value="${defaultOffset}">
+      <span class="offset-display">${defaultOffset}%</span>
+      <button type="button" class="btn-remove">✕</button>
+    `;
+
+        // Offset slider update
+        const slider = row.querySelector(".stop-offset");
+        const display = row.querySelector(".offset-display");
+
+        slider.addEventListener("input", function () {
+          display.innerText = this.value + "%";
+        });
+
+        // Remove color stop
+        const removeBtn = row.querySelector(".btn-remove");
+
+        removeBtn.addEventListener("click", function () {
+          const totalRows = document.querySelectorAll(".color-stop-row").length;
+
+          if (totalRows > 2) {
+            row.remove();
+          } else {
+            alert("You must have at least 2 colors for a gradient!");
+          }
+        });
+
+        container.appendChild(row);
+      }
+
+      // =========================
+      // 5. DATA EXTRACTION HELPERS
+      // =========================
+
+      function getColorStops() {
+        const stops = [];
+
+        document.querySelectorAll(".color-stop-row").forEach(row => {
+          const color = row.querySelector(".stop-color").value;
+          const offset =
+            parseInt(row.querySelector(".stop-offset").value) / 100;
+
+          stops.push({
+            offset: offset,
+            color: color,
+          });
+        });
+
+        // Important: sort offsets ascending
+        stops.sort((a, b) => a.offset - b.offset);
+
+        return stops;
+      }
+
+      // =========================
+      // 6. MAIN QR GENERATION
+      // =========================
+
+      function generateQR() {
+        const text = document.getElementById("text-input").value.trim();
+        const gradType = document.getElementById("grad-type").value;
+        const angleDeg = document.getElementById("grad-angle").value;
+
+        if (!text) {
+          alert("Please enter some text or URL!");
+          return;
+        }
+
+        const colorStops = getColorStops();
+        const rotationRadians = (angleDeg * Math.PI) / 180;
+
+        qrCode.update({
+          data: text,
+          dotsOptions: {
+            gradient: {
+              type: gradType,
+              rotation: rotationRadians,
+              colorStops: colorStops,
+            },
+          },
+        });
+
+        renderQR();
+      }
+
+      // =========================
+      // 7. OUTPUT RENDERING
+      // =========================
+
+      function renderQR() {
+        const qrContainer = document.getElementById("qrcode");
+
+        qrContainer.innerHTML = "";
+        qrCode.append(qrContainer);
+
+        document.getElementById("download-btn").style.display = "block";
+      }
+
+      // =========================
+      // 8. DOWNLOAD
+      // =========================
+
+      function downloadQR() {
+        qrCode.download({
+          name: "advanced-gradient-qr",
+          extension: "png",
+        });
+      }
+    </script>
+  </body>
+</html>
