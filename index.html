@@ -84,6 +84,17 @@
         }
       }
 
+      @keyframes pickerIn {
+        0% {
+          opacity: 0;
+          transform: translateY(8px) scale(0.97);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
       /* Main Workspace Container */
       .main-content {
         flex: 1;
@@ -131,15 +142,7 @@
         align-items: start;
       }
 
-      /* Left Column (Preview + Output Settings) */
-      .left-column {
-        display: flex;
-        flex-direction: column;
-        gap: 24px;
-        width: 100%;
-      }
-
-      /* Preview Area */
+      /* Left Panel: Preview Area */
       .preview-panel {
         background: var(--bg-panel);
         border: 2px dashed var(--border-subtle);
@@ -147,9 +150,10 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         padding: 40px;
         position: relative;
+        min-height: 450px;
         transition: border-color 0.4s ease;
       }
       .preview-panel:hover {
@@ -166,14 +170,18 @@
         align-items: center;
         justify-content: center;
         margin: auto;
-        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
         padding: 24px;
       }
-      .preview-box:hover {
-        transform: scale(1.03);
+
+      .preview-settings {
+        width: 100%;
+        margin-top: 40px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
       }
 
-      /* Settings Cards */
+      /* Right Panel: Settings Card */
       .settings-panel {
         background: var(--bg-card);
         border: 1px solid var(--border-subtle);
@@ -258,6 +266,9 @@
       .form-group {
         margin-bottom: 20px;
       }
+      .preview-settings .form-group {
+        margin-bottom: 0;
+      }
       label {
         display: block;
         font-size: 0.85rem;
@@ -266,7 +277,6 @@
         color: #fff;
       }
 
-      /* Base bounce transition for all form elements */
       input[type="text"],
       input[type="url"],
       input[type="number"],
@@ -283,7 +293,7 @@
         border-radius: var(--radius-sm);
         font-family: inherit;
         font-size: 0.9rem;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: all 0.3s ease;
         box-shadow: 0 0 0 0 transparent;
         appearance: none;
         -webkit-appearance: none;
@@ -293,8 +303,6 @@
         min-height: 80px;
         line-height: 1.4;
       }
-
-      /* Bounce hover/focus interactions */
       input[type="text"]:focus,
       input[type="url"]:focus,
       input[type="number"]:focus,
@@ -400,7 +408,7 @@
         border-radius: var(--radius-sm);
         font-size: 0.9rem;
         cursor: pointer;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -453,7 +461,7 @@
         z-index: 100;
         opacity: 0;
         visibility: hidden;
-        pointer-events: none; /* Prevents ghost clicks on fading out elements */
+        pointer-events: none;
         transform: translateY(-10px);
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         max-height: 260px;
@@ -479,7 +487,7 @@
       .custom-select-wrapper.open .custom-select-menu {
         opacity: 1;
         visibility: visible;
-        pointer-events: auto; /* Re-enables clicks only when fully open */
+        pointer-events: auto;
         transform: translateY(0);
       }
       .cs-item {
@@ -515,6 +523,10 @@
         flex-wrap: wrap;
         gap: 8px;
       }
+      .pill-grid.format-pills {
+        justify-content: center;
+      }
+
       .pill-label {
         display: flex;
         align-items: center;
@@ -607,42 +619,6 @@
         animation: fadeSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
       }
 
-      .single-color-wrapper {
-        width: 100%;
-        height: 50px;
-        border-radius: var(--radius-sm);
-        overflow: hidden;
-        border: 1px solid var(--border-subtle);
-        position: relative;
-        box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
-        transition:
-          border-color 0.3s,
-          transform 0.2s;
-        cursor: pointer;
-      }
-      .single-color-wrapper:hover {
-        border-color: var(--border-hover);
-        transform: scale(1.01);
-      }
-      .single-color-wrapper:active {
-        transform: scale(0.98);
-      }
-      .single-color-wrapper input {
-        width: 100%;
-        height: 100%;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-        background: none;
-      }
-      .single-color-wrapper input::-webkit-color-swatch-wrapper {
-        padding: 0;
-      }
-      .single-color-wrapper input::-webkit-color-swatch {
-        border: none;
-        border-radius: 0;
-      }
-
       .angle-group {
         margin-bottom: 20px;
         display: flex;
@@ -699,130 +675,95 @@
         transform: scale(0.9);
       }
 
-      /* JS Drag & Drop System */
+      /* Modern Gradient Drag and Drop System */
       .color-drag-container {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: 12px;
+        gap: 8px; /* Compact gap as arrows space it out naturally */
         min-height: 48px;
-      }
-      .color-swatch-wrapper {
         position: relative;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        cursor: grab;
+      }
+
+      .color-swatch-wrapper {
+        display: flex;
+        align-items: center;
+        background: var(--bg-input);
+        border: 1px solid var(--border-subtle);
+        border-radius: 20px;
+        padding: 4px 8px;
+        gap: 8px;
         user-select: none;
+        touch-action: none;
+        transition:
+          transform 0.2s,
+          border-color 0.2s;
         flex-shrink: 0;
-        transition: transform 0.2s;
       }
       .color-swatch-wrapper:hover {
-        transform: scale(1.08);
+        border-color: var(--border-hover);
       }
-      .color-swatch-wrapper:active {
-        cursor: grabbing;
-        transform: scale(0.95);
-      }
-
-      .color-swatch-wrapper.dragging {
-        background: transparent;
-        transform: scale(0.9) !important;
-      }
-      .color-swatch-wrapper.dragging .color-swatch {
-        opacity: 0;
-      }
-      .color-swatch-wrapper.dragging .btn-delete-swatch {
-        display: none !important;
-      }
-      .color-swatch-wrapper.dragging::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        border-radius: 50%;
-        background: var(--bg-input);
-        border: 2px dashed var(--border-subtle);
+      .color-swatch-wrapper.ghost {
+        opacity: 0.9 !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+        transform: scale(1.05) rotate(2deg) !important;
+        transition: transform 0.1s ease !important;
+        cursor: grabbing !important;
+        z-index: 9999 !important;
       }
 
-      .color-swatch {
-        -webkit-appearance: none;
-        appearance: none;
-        border: none;
-        width: 100%;
-        height: 100%;
-        border-radius: 50%;
-        padding: 0;
-        cursor: pointer;
-        background: transparent;
-        box-shadow: inset 0 0 0 1px var(--border-subtle);
-        transition: opacity 0.2s;
-      }
-      .color-swatch::-webkit-color-swatch-wrapper {
-        padding: 0;
-      }
-      .color-swatch::-webkit-color-swatch {
-        border: none;
-        border-radius: 50%;
-        box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
-      }
-      .color-swatch-wrapper.dragging .color-swatch {
-        pointer-events: none;
-      }
-
-      .btn-delete-swatch {
-        position: absolute;
-        top: -4px;
-        right: -4px;
-        width: 18px;
-        height: 18px;
-        background: var(--bg-card);
-        border: 1px solid var(--border-subtle);
-        border-radius: 50%;
+      .drag-handle {
+        cursor: grab;
         color: var(--text-muted);
         display: flex;
         align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        opacity: 0;
-        transform: scale(0.8);
-        transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        padding: 0;
-        z-index: 2;
+        padding: 4px;
+        margin-left: -2px;
+        transition: color 0.2s;
       }
-      .color-swatch-wrapper:hover .btn-delete-swatch,
-      .color-swatch-wrapper:focus-within .btn-delete-swatch {
-        opacity: 1;
-        transform: scale(1);
+      .drag-handle:hover {
+        color: var(--text-main);
+      }
+      .drag-handle:active {
+        cursor: grabbing;
+      }
+
+      .btn-delete-swatch {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px;
+        margin-right: -2px;
+        transition:
+          color 0.2s,
+          transform 0.2s;
       }
       .btn-delete-swatch:hover {
-        background: #ff5555;
-        color: #fff;
-        border-color: #ff5555;
-        transform: scale(1.15) !important;
-      }
-      .btn-delete-swatch:active {
-        transform: scale(0.9) !important;
+        color: #ff5555;
+        transform: scale(1.1);
       }
       .color-drag-container[data-count="1"] .btn-delete-swatch {
         display: none !important;
       }
 
-      /* Mobile UI enhancements - permanent visible X button */
-      @media (pointer: coarse) {
-        .btn-delete-swatch {
-          opacity: 1;
-          transform: scale(1);
-          width: 22px;
-          height: 22px;
-          top: -6px;
-          right: -6px;
-          background: var(--bg-card);
-        }
+      .stop-arrow {
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.5;
+        user-select: none;
+        pointer-events: none;
+        margin: 0 2px;
       }
 
       .btn-add-color {
-        width: 44px;
-        height: 44px;
+        width: 36px;
+        height: 36px;
         border-radius: 50%;
         border: 1px dashed var(--text-muted);
         background: transparent;
@@ -833,7 +774,7 @@
         cursor: pointer;
         transition: all 0.2s ease;
         padding: 0;
-        margin: 0;
+        margin: 0 0 0 4px;
         flex-shrink: 0;
       }
       .btn-add-color:hover {
@@ -915,28 +856,11 @@
 
       /* Smoothly disable gradient picker when transparent */
       .transparent-wrapper {
-        transition:
-          opacity 0.4s ease,
-          filter 0.4s ease;
+        transition: opacity 0.4s ease;
       }
       .transparent-toggle-input:checked ~ .transparent-wrapper {
-        opacity: 0.3;
-        filter: grayscale(1);
+        opacity: 0.4;
         pointer-events: none;
-      }
-
-      /* Downloads Section Specific */
-      .custom-size-inputs {
-        display: none;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        margin-top: 12px;
-        width: 100%;
-        will-change: transform, opacity;
-      }
-      #sz-c:checked ~ .custom-size-inputs {
-        display: grid;
-        animation: fadeSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
       }
 
       .btn-action {
@@ -954,7 +878,6 @@
         justify-content: center;
         gap: 8px;
         transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        margin-top: auto;
       }
       .btn-action:hover {
         background: var(--primary-hover);
@@ -964,6 +887,244 @@
       .btn-action:active {
         transform: translateY(1px) scale(0.98);
         box-shadow: 0 2px 10px rgba(42, 60, 223, 0.2);
+      }
+
+      /* =============================================
+         MODERN CUSTOM COLOR PICKER
+         ============================================= */
+      .color-picker-btn {
+        width: 100%;
+        height: 50px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-subtle);
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition:
+          border-color 0.3s,
+          transform 0.2s,
+          box-shadow 0.3s;
+        background: #000;
+      }
+      .color-picker-btn:hover {
+        border-color: var(--border-hover);
+        transform: scale(1.01);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+      }
+      .color-picker-btn:active {
+        transform: scale(0.98);
+      }
+      .color-picker-btn .cp-check-icon {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0;
+        transition: opacity 0.2s;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .color-picker-btn:hover .cp-check-icon {
+        opacity: 1;
+      }
+
+      /* Popup */
+      .cp-popup {
+        position: fixed;
+        z-index: 9999;
+        background: #1a1a24;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 16px;
+        padding: 18px;
+        width: 280px;
+        box-shadow:
+          0 20px 60px rgba(0, 0, 0, 0.7),
+          0 0 0 1px rgba(255, 255, 255, 0.04);
+        display: none;
+        animation: pickerIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+      .cp-popup.visible {
+        display: block;
+      }
+
+      /* Saturation/Lightness canvas area */
+      .cp-sat-area {
+        width: 100%;
+        height: 160px;
+        border-radius: 10px;
+        position: relative;
+        cursor: crosshair;
+        overflow: hidden;
+        margin-bottom: 14px;
+        flex-shrink: 0;
+      }
+      .cp-sat-area canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        border-radius: 10px;
+      }
+      .cp-sat-cursor {
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 2.5px solid #fff;
+        box-shadow:
+          0 0 0 1.5px rgba(0, 0, 0, 0.5),
+          0 2px 8px rgba(0, 0, 0, 0.6);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        transition: box-shadow 0.15s;
+      }
+
+      /* Sliders row */
+      .cp-sliders {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .cp-slider-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .cp-preview-swatch {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        flex-shrink: 0;
+        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
+      }
+      .cp-hue-track {
+        flex: 1;
+        height: 14px;
+        border-radius: 7px;
+        position: relative;
+        cursor: pointer;
+        margin: 0 10px; /* Offset the track to prevent thumb overflow */
+        background: linear-gradient(
+          to right,
+          #ff0000,
+          #ff8000,
+          #ffff00,
+          #80ff00,
+          #00ff00,
+          #00ff80,
+          #00ffff,
+          #0080ff,
+          #0000ff,
+          #8000ff,
+          #ff00ff,
+          #ff0080,
+          #ff0000
+        );
+      }
+      .cp-thumb {
+        position: absolute;
+        top: 50%;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid #fff;
+        box-shadow:
+          0 1px 6px rgba(0, 0, 0, 0.6),
+          0 0 0 1px rgba(0, 0, 0, 0.2);
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        transition: transform 0.1s;
+      }
+      .cp-hue-track:active .cp-thumb {
+        transform: translate(-50%, -50%) scale(1.15);
+      }
+
+      /* Inputs */
+      .cp-inputs-container {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .cp-inputs {
+        display: grid;
+        gap: 6px;
+        align-items: center;
+      }
+      .cp-input-group {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+      .cp-input-group input {
+        width: 100%;
+        background: #111118;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        text-align: center;
+        padding: 7px 4px;
+        border-radius: 7px;
+        font-size: 0.75rem;
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-weight: 500;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
+        outline: none;
+      }
+      .cp-input-group input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px var(--primary-glow);
+        transform: none;
+      }
+      .cp-input-group span {
+        font-size: 0.62rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+      }
+
+      /* Presets row */
+      .cp-presets {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
+      }
+      .cp-preset {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        cursor: pointer;
+        transition:
+          transform 0.15s,
+          border-color 0.15s;
+        flex-shrink: 0;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      }
+      .cp-preset:hover {
+        transform: scale(1.25);
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+
+      /* Swatch inside drag container */
+      .color-swatch-wrapper .cp-swatch-display {
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.15);
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: transform 0.15s;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      }
+      .color-swatch-wrapper .cp-swatch-display:hover {
+        transform: scale(1.1);
       }
 
       @media (max-width: 900px) {
@@ -981,51 +1142,45 @@
       </div>
 
       <form id="qr-form" class="qr-form" aria-label="QR Settings">
+        <!-- ======================= -->
+        <!-- MAIN WORKSPACE LAYOUT   -->
+        <!-- ======================= -->
         <div class="workspace">
-          <!-- ======================= -->
-          <!-- LEFT COLUMN             -->
-          <!-- ======================= -->
-          <div class="left-column">
-            <!-- PREVIEW PANEL -->
-            <div class="preview-panel">
-              <div class="preview-box" aria-live="polite">
-                <!-- Dummy QR Code Vector -->
-                <svg
-                  width="100%"
-                  height="100%"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  stroke="none"
-                >
-                  <path d="M3 3h6v6H3zM5 5v2h2V5z" />
-                  <path d="M15 3h6v6h-6zM17 5v2h2V5z" />
-                  <path d="M3 15h6v6H3zM5 17v2h2v-2z" />
-                  <rect x="11" y="3" width="2" height="2" />
-                  <rect x="11" y="7" width="2" height="2" />
-                  <rect x="3" y="11" width="2" height="2" />
-                  <rect x="7" y="11" width="2" height="2" />
-                  <rect x="11" y="11" width="2" height="2" />
-                  <rect x="15" y="11" width="2" height="2" />
-                  <rect x="19" y="11" width="2" height="2" />
-                  <rect x="11" y="15" width="2" height="2" />
-                  <rect x="15" y="15" width="2" height="2" />
-                  <rect x="19" y="15" width="2" height="2" />
-                  <rect x="11" y="19" width="2" height="2" />
-                  <rect x="15" y="19" width="2" height="2" />
-                  <rect x="19" y="19" width="2" height="2" />
-                  <rect x="17" y="17" width="2" height="2" />
-                  <rect x="13" y="17" width="2" height="2" />
-                </svg>
-              </div>
+          <!-- LEFT PANEL: Preview -->
+          <div class="preview-panel">
+            <div class="preview-box" aria-live="polite">
+              <!-- Dummy QR Code Vector -->
+              <svg
+                width="100%"
+                height="100%"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                stroke="none"
+              >
+                <path d="M3 3h6v6H3zM5 5v2h2V5z" />
+                <path d="M15 3h6v6h-6zM17 5v2h2V5z" />
+                <path d="M3 15h6v6H3zM5 17v2h2v-2z" />
+                <rect x="11" y="3" width="2" height="2" />
+                <rect x="11" y="7" width="2" height="2" />
+                <rect x="3" y="11" width="2" height="2" />
+                <rect x="7" y="11" width="2" height="2" />
+                <rect x="11" y="11" width="2" height="2" />
+                <rect x="15" y="11" width="2" height="2" />
+                <rect x="19" y="11" width="2" height="2" />
+                <rect x="11" y="15" width="2" height="2" />
+                <rect x="15" y="15" width="2" height="2" />
+                <rect x="19" y="15" width="2" height="2" />
+                <rect x="11" y="19" width="2" height="2" />
+                <rect x="15" y="19" width="2" height="2" />
+                <rect x="19" y="19" width="2" height="2" />
+                <rect x="17" y="17" width="2" height="2" />
+                <rect x="13" y="17" width="2" height="2" />
+              </svg>
             </div>
 
-            <!-- OUTPUT SETTINGS PANEL -->
-            <div class="settings-panel">
-              <h2 class="settings-title">Output Settings</h2>
-
+            <div class="preview-settings">
               <div class="form-group">
-                <label>Format</label>
-                <div class="pill-grid">
+                <div class="pill-grid format-pills">
                   <input
                     type="radio"
                     name="format"
@@ -1034,13 +1189,7 @@
                     checked
                   />
                   <label for="fmt-png" class="pill-label">PNG</label>
-                  <input
-                    type="radio"
-                    name="format"
-                    id="fmt-svg"
-                    class="sr-only"
-                  />
-                  <label for="fmt-svg" class="pill-label">SVG</label>
+
                   <input
                     type="radio"
                     name="format"
@@ -1048,54 +1197,42 @@
                     class="sr-only"
                   />
                   <label for="fmt-jpg" class="pill-label">JPG</label>
-                </div>
-              </div>
 
-              <div class="form-group">
-                <label>Error Correction</label>
-                <div class="pill-grid">
-                  <input type="radio" name="ec" id="ec-l" class="sr-only" />
-                  <label for="ec-l" class="pill-label">Low</label>
                   <input
                     type="radio"
-                    name="ec"
-                    id="ec-m"
+                    name="format"
+                    id="fmt-webp"
                     class="sr-only"
-                    checked
                   />
-                  <label for="ec-m" class="pill-label">Medium</label>
-                  <input type="radio" name="ec" id="ec-q" class="sr-only" />
-                  <label for="ec-q" class="pill-label">High</label>
-                  <input type="radio" name="ec" id="ec-h" class="sr-only" />
-                  <label for="ec-h" class="pill-label">Max</label>
-                </div>
-              </div>
+                  <label for="fmt-webp" class="pill-label">WEBP</label>
 
-              <div class="form-group">
-                <label>Output Size</label>
-                <div class="pill-grid">
-                  <input type="radio" name="size" id="sz-s" class="sr-only" />
-                  <label for="sz-s" class="pill-label">Small</label>
                   <input
                     type="radio"
-                    name="size"
-                    id="sz-m"
+                    name="format"
+                    id="fmt-svg"
                     class="sr-only"
-                    checked
                   />
-                  <label for="sz-m" class="pill-label">Medium</label>
-                  <input type="radio" name="size" id="sz-l" class="sr-only" />
-                  <label for="sz-l" class="pill-label">Large</label>
-                  <input type="radio" name="size" id="sz-c" class="sr-only" />
-                  <label for="sz-c" class="pill-label">Custom</label>
-                  <div class="custom-size-inputs">
-                    <input type="number" placeholder="W (px)" min="100" />
-                    <input type="number" placeholder="H (px)" min="100" />
-                  </div>
+                  <label for="fmt-svg" class="pill-label">SVG</label>
+
+                  <input
+                    type="radio"
+                    name="format"
+                    id="fmt-eps"
+                    class="sr-only"
+                  />
+                  <label for="fmt-eps" class="pill-label">EPS</label>
+
+                  <input
+                    type="radio"
+                    name="format"
+                    id="fmt-pdf"
+                    class="sr-only"
+                  />
+                  <label for="fmt-pdf" class="pill-label">PDF</label>
                 </div>
               </div>
 
-              <button type="submit" class="btn-action" style="margin-top: 24px">
+              <button type="submit" class="btn-action">
                 <svg
                   width="18"
                   height="18"
@@ -1113,9 +1250,7 @@
             </div>
           </div>
 
-          <!-- ======================= -->
-          <!-- RIGHT PANEL: Settings   -->
-          <!-- ======================= -->
+          <!-- RIGHT PANEL: Settings Card -->
           <div class="settings-panel">
             <h2 class="settings-title">Settings</h2>
 
@@ -2165,12 +2300,27 @@
                 </div>
 
                 <div class="mode-content single-mode" style="display: flex">
-                  <div class="single-color-wrapper">
-                    <input
-                      type="color"
-                      value="#000000"
-                      aria-label="Dots Color"
-                    />
+                  <div
+                    class="color-picker-btn js-color-btn"
+                    data-value="#000000"
+                    style="background: #000000"
+                    role="button"
+                    aria-label="Dots Color"
+                  >
+                    <svg
+                      class="cp-check-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <path
+                        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                      />
+                      <polyline points="9 11 12 14 22 4" />
+                    </svg>
                   </div>
                 </div>
 
@@ -2276,12 +2426,27 @@
                 </div>
 
                 <div class="mode-content single-mode" style="display: flex">
-                  <div class="single-color-wrapper">
-                    <input
-                      type="color"
-                      value="#000000"
-                      aria-label="Corners Square Color"
-                    />
+                  <div
+                    class="color-picker-btn js-color-btn"
+                    data-value="#000000"
+                    style="background: #000000"
+                    role="button"
+                    aria-label="Corners Square Color"
+                  >
+                    <svg
+                      class="cp-check-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <path
+                        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                      />
+                      <polyline points="9 11 12 14 22 4" />
+                    </svg>
                   </div>
                 </div>
 
@@ -2391,12 +2556,27 @@
                 </div>
 
                 <div class="mode-content single-mode" style="display: flex">
-                  <div class="single-color-wrapper">
-                    <input
-                      type="color"
-                      value="#000000"
-                      aria-label="Corners Dot Color"
-                    />
+                  <div
+                    class="color-picker-btn js-color-btn"
+                    data-value="#000000"
+                    style="background: #000000"
+                    role="button"
+                    aria-label="Corners Dot Color"
+                  >
+                    <svg
+                      class="cp-check-icon"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    >
+                      <path
+                        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                      />
+                      <polyline points="9 11 12 14 22 4" />
+                    </svg>
                   </div>
                 </div>
 
@@ -2490,9 +2670,13 @@
                 />
                 <div class="bg-header-flex">
                   <label style="margin: 0">Background Color</label>
-                  <label for="transparent-toggle" class="switch-wrapper">
-                    <div class="switch"><span class="slider"></span></div>
+                  <label
+                    for="transparent-toggle"
+                    class="switch-wrapper"
+                    style="color: #ffffff"
+                  >
                     Transparent
+                    <div class="switch"><span class="slider"></span></div>
                   </label>
                 </div>
 
@@ -2519,12 +2703,27 @@
                   </div>
 
                   <div class="mode-content single-mode" style="display: flex">
-                    <div class="single-color-wrapper">
-                      <input
-                        type="color"
-                        value="#ffffff"
-                        aria-label="Background Color"
-                      />
+                    <div
+                      class="color-picker-btn js-color-btn"
+                      data-value="#ffffff"
+                      style="background: #ffffff"
+                      role="button"
+                      aria-label="Background Color"
+                    >
+                      <svg
+                        class="cp-check-icon"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                      >
+                        <path
+                          d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
+                        />
+                        <polyline points="9 11 12 14 22 4" />
+                      </svg>
                     </div>
                   </div>
 
@@ -2606,12 +2805,74 @@
       </form>
     </main>
 
+    <!-- Color Picker Popup (shared, moved via JS) -->
+    <div class="cp-popup" id="cp-popup">
+      <div class="cp-sat-area" id="cp-sat">
+        <canvas id="cp-canvas"></canvas>
+        <div class="cp-sat-cursor" id="cp-cursor"></div>
+      </div>
+      <div class="cp-sliders">
+        <div class="cp-slider-row">
+          <div class="cp-preview-swatch" id="cp-preview"></div>
+          <div class="cp-hue-track" id="cp-hue">
+            <div class="cp-thumb" id="cp-hue-thumb"></div>
+          </div>
+        </div>
+      </div>
+      <div class="cp-inputs-container">
+        <!-- HEX input spanning -->
+        <div class="cp-inputs" style="grid-template-columns: 1fr">
+          <div class="cp-input-group">
+            <input
+              type="text"
+              id="cp-hex"
+              maxlength="7"
+              spellcheck="false"
+            /><span>Hex</span>
+          </div>
+        </div>
+        <!-- RGB row -->
+        <div class="cp-inputs" style="grid-template-columns: 1fr 1fr 1fr">
+          <div class="cp-input-group">
+            <input type="number" id="cp-r" min="0" max="255" /><span>R</span>
+          </div>
+          <div class="cp-input-group">
+            <input type="number" id="cp-g" min="0" max="255" /><span>G</span>
+          </div>
+          <div class="cp-input-group">
+            <input type="number" id="cp-b" min="0" max="255" /><span>B</span>
+          </div>
+        </div>
+        <!-- HSL row -->
+        <div class="cp-inputs" style="grid-template-columns: 1fr 1fr 1fr">
+          <div class="cp-input-group">
+            <input type="number" id="cp-h-hsl" min="0" max="360" /><span
+              >H</span
+            >
+          </div>
+          <div class="cp-input-group">
+            <input type="number" id="cp-s-hsl" min="0" max="100" /><span
+              >S%</span
+            >
+          </div>
+          <div class="cp-input-group">
+            <input type="number" id="cp-l-hsl" min="0" max="100" /><span
+              >L%</span
+            >
+          </div>
+        </div>
+      </div>
+      <div class="cp-presets" id="cp-presets"></div>
+    </div>
+
     <!-- UI Logic Scripts -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {
-        const deleteSvg = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+        const deleteSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+        const dragHandleSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>`;
+        const arrowSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>`;
 
-        // === CUSTOM DROPDOWN LOGIC & DYNAMIC FORMS ===
+        // === CUSTOM DROPDOWN LOGIC ===
         document.querySelectorAll(".js-custom-select").forEach(wrapper => {
           const trigger = wrapper.querySelector(".custom-select-trigger");
           const items = wrapper.querySelectorAll(".cs-item");
@@ -2620,8 +2881,6 @@
 
           trigger.addEventListener("click", e => {
             e.stopPropagation();
-
-            // Close other open dropdowns
             document
               .querySelectorAll(".js-custom-select.open")
               .forEach(other => {
@@ -2630,7 +2889,7 @@
 
             if (wrapper.classList.contains("open")) {
               wrapper.classList.remove("open");
-              trigger.blur(); // Drop focus when closing
+              trigger.blur();
             } else {
               wrapper.classList.add("open");
             }
@@ -2639,34 +2898,26 @@
           items.forEach(item => {
             item.addEventListener("click", e => {
               e.stopPropagation();
-
-              // Manage Active States
               items.forEach(i => i.classList.remove("selected"));
               item.classList.add("selected");
 
-              // Sync values to hidden input and trigger display
               const value = item.getAttribute("data-value");
               const text = item.textContent.trim();
-
-              // if it has an icon, grab it
               let iconHtml = "";
               const icon = item.querySelector("svg");
               if (icon) iconHtml = icon.outerHTML;
 
               hiddenInput.value = value;
               valueDisplay.innerHTML = `${iconHtml}<span>${text}</span>`;
-
               wrapper.classList.remove("open");
-              trigger.blur(); // Drop focus on selection
+              trigger.blur();
 
-              // Toggle Dynamic Forms ONLY if this is the Main Template Dropdown
               if (wrapper.id === "template-dropdown-wrapper") {
                 document
                   .querySelectorAll(".dynamic-section")
                   .forEach(sec => sec.classList.remove("active"));
                 const activeSec = document.getElementById("sec-" + value);
                 if (activeSec) {
-                  // Force a reflow to ensure the animation triggers perfectly every time
                   void activeSec.offsetWidth;
                   activeSec.classList.add("active");
                 }
@@ -2675,16 +2926,12 @@
           });
         });
 
-        // Close dropdown when clicking outside
         document.addEventListener("click", e => {
           document.querySelectorAll(".js-custom-select").forEach(wrapper => {
-            if (!wrapper.contains(e.target)) {
-              wrapper.classList.remove("open");
-            }
+            if (!wrapper.contains(e.target)) wrapper.classList.remove("open");
           });
         });
 
-        // Close on 'Escape'
         document.addEventListener("keydown", e => {
           if (e.key === "Escape") {
             document
@@ -2696,7 +2943,7 @@
           }
         });
 
-        // === CENTER LOGO LOGIC (Prevents file clearing on cancel) ===
+        // === CENTER LOGO LOGIC ===
         const logoUpload = document.getElementById("logo-upload");
         const btnRemoveLogo = document.getElementById("btn-remove-logo");
         const logoOptions = document.getElementById("logo-options");
@@ -2708,7 +2955,6 @@
             btnRemoveLogo.style.display = "inline-block";
             logoOptions.classList.add("active");
           } else if (lastSelectedFile) {
-            // User hit "Cancel", restore previous file
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(lastSelectedFile);
             logoUpload.files = dataTransfer.files;
@@ -2719,7 +2965,7 @@
         });
 
         btnRemoveLogo.addEventListener("click", () => {
-          logoUpload.value = ""; // Clear file selection completely
+          logoUpload.value = "";
           lastSelectedFile = null;
           btnRemoveLogo.style.display = "none";
           logoOptions.classList.remove("active");
@@ -2727,7 +2973,6 @@
 
         // === COLOR SECTION UI LOGIC ===
         document.querySelectorAll(".color-section").forEach(section => {
-          // View Toggling (Single vs Gradient)
           const modeRadios = section.querySelectorAll('input[name$="_mode"]');
           const singleView = section.querySelector(".single-mode");
           const gradView = section.querySelector(".gradient-mode");
@@ -2744,7 +2989,6 @@
             });
           });
 
-          // Gradient Type Toggling (Linear vs Radial + Angle Slider reveal)
           const typeRadios = section.querySelectorAll('input[name$="_gtype"]');
           const angleGroup = section.querySelector(".angle-group");
 
@@ -2758,7 +3002,6 @@
             });
           });
 
-          // Angle Slider Live Text Update
           const rangeInput = section.querySelector(".modern-range");
           const angleValText = section.querySelector(".angle-val");
           if (rangeInput && angleValText) {
@@ -2768,17 +3011,500 @@
           }
         });
 
-        // === BUTTERY SMOOTH FLIP DRAG & DROP LOGIC ===
-        function createSwatch(colorValue = "#000000") {
+        /* ===================================================
+         MODERN CUSTOM COLOR PICKER ENGINE
+        ==================================================== */
+        const PRESETS = [
+          "#000000",
+          "#ffffff",
+          "#ff3b3b",
+          "#ff9500",
+          "#ffcc00",
+          "#34c759",
+          "#5ac8fa",
+          "#2a3cdf",
+          "#af52de",
+          "#ff2d55",
+          "#8e8e93",
+          "#636366",
+        ];
+
+        let currentHue = 0;
+        let currentSat = 1;
+        let currentVal = 0;
+        let activeBtn = null;
+
+        const popup = document.getElementById("cp-popup");
+        const canvas = document.getElementById("cp-canvas");
+        const ctx = canvas.getContext("2d");
+        const cursor = document.getElementById("cp-cursor");
+        const hueTrack = document.getElementById("cp-hue");
+        const hueThumb = document.getElementById("cp-hue-thumb");
+        const preview = document.getElementById("cp-preview");
+        const hexIn = document.getElementById("cp-hex");
+        const rIn = document.getElementById("cp-r");
+        const gIn = document.getElementById("cp-g");
+        const bIn = document.getElementById("cp-b");
+        const hHslIn = document.getElementById("cp-h-hsl");
+        const sHslIn = document.getElementById("cp-s-hsl");
+        const lHslIn = document.getElementById("cp-l-hsl");
+        const presetsEl = document.getElementById("cp-presets");
+
+        // Build presets
+        PRESETS.forEach(c => {
+          const d = document.createElement("div");
+          d.className = "cp-preset";
+          d.style.background = c;
+          d.title = c;
+          d.addEventListener("click", () => {
+            setFromHex(c);
+            updateAll();
+          });
+          presetsEl.appendChild(d);
+        });
+
+        function hsvToRgb(h, s, v) {
+          let r, g, b;
+          const i = Math.floor(h / 60) % 6,
+            f = h / 60 - Math.floor(h / 60),
+            p = v * (1 - s),
+            q = v * (1 - f * s),
+            t = v * (1 - (1 - f) * s);
+          switch (i) {
+            case 0:
+              r = v;
+              g = t;
+              b = p;
+              break;
+            case 1:
+              r = q;
+              g = v;
+              b = p;
+              break;
+            case 2:
+              r = p;
+              g = v;
+              b = t;
+              break;
+            case 3:
+              r = p;
+              g = q;
+              b = v;
+              break;
+            case 4:
+              r = t;
+              g = p;
+              b = v;
+              break;
+            case 5:
+              r = v;
+              g = p;
+              b = q;
+              break;
+          }
+          return [
+            Math.round(r * 255),
+            Math.round(g * 255),
+            Math.round(b * 255),
+          ];
+        }
+
+        function rgbToHsv(r, g, b) {
+          r /= 255;
+          g /= 255;
+          b /= 255;
+          const max = Math.max(r, g, b),
+            min = Math.min(r, g, b),
+            d = max - min;
+          let h,
+            s = max === 0 ? 0 : d / max,
+            v = max;
+          if (max === min) {
+            h = 0;
+          } else {
+            switch (max) {
+              case r:
+                h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+                break;
+              case g:
+                h = ((b - r) / d + 2) / 6;
+                break;
+              case b:
+                h = ((r - g) / d + 4) / 6;
+                break;
+            }
+          }
+          return [h * 360, s, v];
+        }
+
+        function rgbToHsl(r, g, b) {
+          r /= 255;
+          g /= 255;
+          b /= 255;
+          const max = Math.max(r, g, b),
+            min = Math.min(r, g, b);
+          let h,
+            s,
+            l = (max + min) / 2;
+          if (max === min) {
+            h = s = 0;
+          } else {
+            const d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+              case r:
+                h = (g - b) / d + (g < b ? 6 : 0);
+                break;
+              case g:
+                h = (b - r) / d + 2;
+                break;
+              case b:
+                h = (r - g) / d + 4;
+                break;
+            }
+            h /= 6;
+          }
+          return [
+            Math.round(h * 360),
+            Math.round(s * 100),
+            Math.round(l * 100),
+          ];
+        }
+
+        function hslToRgb(h, s, l) {
+          h /= 360;
+          s /= 100;
+          l /= 100;
+          let r, g, b;
+          if (s === 0) {
+            r = g = b = l;
+          } else {
+            const hue2rgb = (p, q, t) => {
+              if (t < 0) t += 1;
+              if (t > 1) t -= 1;
+              if (t < 1 / 6) return p + (q - p) * 6 * t;
+              if (t < 1 / 2) return q;
+              if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+              return p;
+            };
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1 / 3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1 / 3);
+          }
+          return [
+            Math.round(r * 255),
+            Math.round(g * 255),
+            Math.round(b * 255),
+          ];
+        }
+
+        function toHex2(n) {
+          return n.toString(16).padStart(2, "0");
+        }
+
+        function rgbToHex(r, g, b) {
+          return "#" + toHex2(r) + toHex2(g) + toHex2(b);
+        }
+
+        function hexToRgb(hex) {
+          hex = hex.replace("#", "");
+          if (hex.length === 3)
+            hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+          return [
+            parseInt(hex.slice(0, 2), 16),
+            parseInt(hex.slice(2, 4), 16),
+            parseInt(hex.slice(4, 6), 16),
+          ];
+        }
+
+        function drawCanvas() {
+          const W = canvas.width,
+            H = canvas.height;
+          const gradH = ctx.createLinearGradient(0, 0, W, 0);
+          gradH.addColorStop(0, "#fff");
+          gradH.addColorStop(1, `hsl(${currentHue},100%,50%)`);
+          ctx.fillStyle = gradH;
+          ctx.fillRect(0, 0, W, H);
+          const gradV = ctx.createLinearGradient(0, 0, 0, H);
+          gradV.addColorStop(0, "rgba(0,0,0,0)");
+          gradV.addColorStop(1, "#000");
+          ctx.fillStyle = gradV;
+          ctx.fillRect(0, 0, W, H);
+        }
+
+        function updateCursor() {
+          const rect = canvas.getBoundingClientRect();
+          const x = currentSat * rect.width,
+            y = (1 - currentVal) * rect.height;
+          cursor.style.left = x + "px";
+          cursor.style.top = y + "px";
+        }
+
+        function updateHueThumb() {
+          hueThumb.style.left = (currentHue / 360) * 100 + "%";
+        }
+
+        function updatePreview() {
+          const [r, g, b] = hsvToRgb(currentHue, currentSat, currentVal);
+          preview.style.background = `rgb(${r},${g},${b})`;
+        }
+
+        function updateInputs() {
+          const [r, g, b] = hsvToRgb(currentHue, currentSat, currentVal);
+          const [h, s, l] = rgbToHsl(r, g, b);
+
+          hexIn.value = rgbToHex(r, g, b);
+          rIn.value = r;
+          gIn.value = g;
+          bIn.value = b;
+          hHslIn.value = h;
+          sHslIn.value = s;
+          lHslIn.value = l;
+        }
+
+        function updateBtn() {
+          if (!activeBtn) return;
+          const [r, g, b] = hsvToRgb(currentHue, currentSat, currentVal);
+          const color = `rgb(${r},${g},${b})`;
+          activeBtn.style.background = color;
+          activeBtn.dataset.value = rgbToHex(r, g, b);
+          const swatchDisp = activeBtn._swatchRef;
+          if (swatchDisp) swatchDisp.style.background = color;
+        }
+
+        function updateAll() {
+          drawCanvas();
+          updateCursor();
+          updateHueThumb();
+          updatePreview();
+          updateInputs();
+          updateBtn();
+        }
+
+        function setFromHex(hex) {
+          try {
+            const [r, g, b] = hexToRgb(hex);
+            const [h, s, v] = rgbToHsv(r, g, b);
+            currentHue = h;
+            currentSat = s;
+            currentVal = v;
+          } catch (e) {}
+        }
+
+        function resizeCanvas() {
+          const rect = canvas.getBoundingClientRect();
+          canvas.width = rect.width || 244;
+          canvas.height = rect.height || 160;
+          drawCanvas();
+        }
+
+        function pickSatVal(e) {
+          const rect = canvas.getBoundingClientRect();
+          const x = Math.max(
+            0,
+            Math.min(1, (e.clientX - rect.left) / rect.width),
+          );
+          const y = Math.max(
+            0,
+            Math.min(1, (e.clientY - rect.top) / rect.height),
+          );
+          currentSat = x;
+          currentVal = 1 - y;
+          updateAll();
+        }
+
+        let draggingSat = false;
+        canvas.addEventListener("pointerdown", e => {
+          draggingSat = true;
+          canvas.setPointerCapture(e.pointerId);
+          pickSatVal(e);
+        });
+        canvas.addEventListener("pointermove", e => {
+          if (draggingSat) pickSatVal(e);
+        });
+        canvas.addEventListener("pointerup", () => (draggingSat = false));
+
+        function pickHue(e) {
+          const rect = hueTrack.getBoundingClientRect();
+          const x = Math.max(
+            0,
+            Math.min(1, (e.clientX - rect.left) / rect.width),
+          );
+          currentHue = x * 360;
+          updateAll();
+        }
+
+        let draggingHue = false;
+        hueTrack.addEventListener("pointerdown", e => {
+          draggingHue = true;
+          hueTrack.setPointerCapture(e.pointerId);
+          pickHue(e);
+        });
+        hueTrack.addEventListener("pointermove", e => {
+          if (draggingHue) pickHue(e);
+        });
+        hueTrack.addEventListener("pointerup", () => (draggingHue = false));
+
+        // HEX Input change
+        hexIn.addEventListener("change", () => {
+          let v = hexIn.value.trim();
+          if (!v.startsWith("#")) v = "#" + v;
+          if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+            setFromHex(v);
+            updateAll();
+          }
+        });
+
+        // RGB Input change
+        [rIn, gIn, bIn].forEach(inp =>
+          inp.addEventListener("change", () => {
+            const r = Math.max(0, Math.min(255, parseInt(rIn.value) || 0));
+            const g = Math.max(0, Math.min(255, parseInt(gIn.value) || 0));
+            const b = Math.max(0, Math.min(255, parseInt(bIn.value) || 0));
+            const [h, s, v] = rgbToHsv(r, g, b);
+            currentHue = h;
+            currentSat = s;
+            currentVal = v;
+            updateAll();
+          }),
+        );
+
+        // HSL Input change
+        [hHslIn, sHslIn, lHslIn].forEach(inp =>
+          inp.addEventListener("change", () => {
+            const h = Math.max(0, Math.min(360, parseInt(hHslIn.value) || 0));
+            const s = Math.max(0, Math.min(100, parseInt(sHslIn.value) || 0));
+            const l = Math.max(0, Math.min(100, parseInt(lHslIn.value) || 0));
+
+            const [r, g, b] = hslToRgb(h, s, l);
+            const [hsvH, hsvS, hsvV] = rgbToHsv(r, g, b);
+
+            currentHue = hsvH;
+            currentSat = hsvS;
+            currentVal = hsvV;
+            updateAll();
+          }),
+        );
+
+        function openPicker(btn) {
+          activeBtn = btn;
+          const hex = btn.dataset.value || "#000000";
+          setFromHex(hex);
+
+          popup.classList.add("visible");
+          requestAnimationFrame(() => {
+            const rect = btn.getBoundingClientRect();
+            const pw = popup.offsetWidth,
+              ph = popup.offsetHeight;
+            let left = rect.left;
+            let top = rect.bottom + 8;
+
+            // X Axis Boundaries
+            if (left + pw > window.innerWidth - 12)
+              left = window.innerWidth - pw - 12;
+            if (left < 12) left = 12;
+
+            // Y Axis Boundaries
+            if (top + ph > window.innerHeight - 12) {
+              // Try placing it above the element
+              top = rect.top - ph - 8;
+              // If it spills off the top, force cap
+              if (top < 12) {
+                top = window.innerHeight - ph - 12;
+                if (top < 12) top = 12;
+              }
+            }
+
+            popup.style.left = left + "px";
+            popup.style.top = top + "px";
+            resizeCanvas();
+            updateAll();
+          });
+        }
+
+        function closePicker() {
+          popup.classList.remove("visible");
+          activeBtn = null;
+        }
+
+        function attachBtn(btn) {
+          btn.addEventListener("click", e => {
+            e.stopPropagation();
+            if (popup.classList.contains("visible") && activeBtn === btn) {
+              closePicker();
+              return;
+            }
+            openPicker(btn);
+          });
+        }
+
+        document.querySelectorAll(".js-color-btn").forEach(attachBtn);
+
+        document.addEventListener("click", e => {
+          if (
+            popup.classList.contains("visible") &&
+            !popup.contains(e.target)
+          ) {
+            closePicker();
+          }
+        });
+
+        popup.addEventListener("click", e => e.stopPropagation());
+
+        // === MODERN DRAG & DROP LOGIC ===
+        function createGradientSwatch(colorValue = "#000000") {
           const wrapper = document.createElement("div");
           wrapper.className = "color-swatch-wrapper";
-          wrapper.setAttribute("draggable", "true");
 
-          const input = document.createElement("input");
-          input.type = "color";
-          input.className = "color-swatch";
-          input.value = colorValue;
-          input.setAttribute("aria-label", "Color Swatch");
+          const handle = document.createElement("div");
+          handle.className = "drag-handle";
+          handle.innerHTML = dragHandleSvg;
+
+          // Mini color button (circular display)
+          const swatchDisp = document.createElement("div");
+          swatchDisp.className = "cp-swatch-display";
+          swatchDisp.style.background = colorValue;
+
+          // Hidden btn reference for picker
+          const fakeBtn = document.createElement("div");
+          fakeBtn.dataset.value = colorValue;
+          fakeBtn.style.display = "none";
+          fakeBtn._swatchRef = swatchDisp;
+          swatchDisp._fakeBtn = fakeBtn;
+
+          swatchDisp.addEventListener("click", e => {
+            e.stopPropagation();
+            if (popup.classList.contains("visible") && activeBtn === fakeBtn) {
+              closePicker();
+              return;
+            }
+            openPicker(fakeBtn);
+            // reposition near the swatch
+            requestAnimationFrame(() => {
+              const rect = swatchDisp.getBoundingClientRect();
+              const pw = popup.offsetWidth,
+                ph = popup.offsetHeight;
+              let left = rect.left;
+              let top = rect.bottom + 8;
+
+              if (left + pw > window.innerWidth - 12)
+                left = window.innerWidth - pw - 12;
+              if (left < 12) left = 12;
+
+              if (top + ph > window.innerHeight - 12) {
+                top = rect.top - ph - 8;
+                if (top < 12) {
+                  top = window.innerHeight - ph - 12;
+                  if (top < 12) top = 12;
+                }
+              }
+
+              popup.style.left = left + "px";
+              popup.style.top = top + "px";
+            });
+          });
 
           const delBtn = document.createElement("button");
           delBtn.type = "button";
@@ -2786,63 +3512,33 @@
           delBtn.innerHTML = deleteSvg;
           delBtn.title = "Remove Color";
 
-          // Deletion Logic
           delBtn.addEventListener("click", () => {
             const container = wrapper.parentElement;
             if (
-              container.querySelectorAll(".color-swatch-wrapper").length > 1
+              container.querySelectorAll(".color-swatch-wrapper:not(.ghost)")
+                .length > 1
             ) {
               wrapper.style.transform = "scale(0)";
               wrapper.style.opacity = "0";
               setTimeout(() => {
                 wrapper.remove();
-                updateCount(container);
+                if (container._updateArrows) container._updateArrows();
               }, 200);
             }
           });
 
-          // Drag Events
-          wrapper.addEventListener("dragstart", e => {
-            setTimeout(() => wrapper.classList.add("dragging"), 0);
-            e.dataTransfer.effectAllowed = "move";
-          });
-
-          wrapper.addEventListener("dragend", () => {
-            wrapper.classList.remove("dragging");
-            wrapper.style.transition = "";
-            wrapper.style.transform = "";
-          });
-
-          wrapper.appendChild(input);
+          wrapper.appendChild(handle);
+          wrapper.appendChild(swatchDisp);
+          wrapper.appendChild(fakeBtn);
           wrapper.appendChild(delBtn);
           return wrapper;
         }
 
         function updateCount(container) {
           const count = container.querySelectorAll(
-            ".color-swatch-wrapper",
+            ".color-swatch-wrapper:not(.ghost)",
           ).length;
           container.setAttribute("data-count", count);
-        }
-
-        function getDragAfterElement(container, x) {
-          const draggableElements = [
-            ...container.querySelectorAll(
-              ".color-swatch-wrapper:not(.dragging)",
-            ),
-          ];
-          return draggableElements.reduce(
-            (closest, child) => {
-              const box = child.getBoundingClientRect();
-              const offset = x - (box.left + box.width / 2);
-              if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-              } else {
-                return closest;
-              }
-            },
-            { offset: Number.NEGATIVE_INFINITY },
-          ).element;
         }
 
         function initColorList(containerId, defaultColor1, defaultColor2) {
@@ -2850,92 +3546,137 @@
           if (!container) return;
           const addBtn = container.querySelector(".btn-add-color");
 
-          // Initialize gradients with 2 colors
-          container.insertBefore(createSwatch(defaultColor1), addBtn);
-          container.insertBefore(createSwatch(defaultColor2), addBtn);
-          updateCount(container);
+          function updateArrows() {
+            container
+              .querySelectorAll(".stop-arrow")
+              .forEach(el => el.remove());
+            const swatches = Array.from(
+              container.querySelectorAll(".color-swatch-wrapper:not(.ghost)"),
+            );
+
+            swatches.forEach((swatch, index) => {
+              if (index < swatches.length - 1) {
+                const arrow = document.createElement("div");
+                arrow.className = "stop-arrow";
+                arrow.innerHTML = arrowSvg;
+                swatch.after(arrow);
+              }
+            });
+            updateCount(container);
+          }
+          container._updateArrows = updateArrows;
+
+          // Initialize default colors
+          container.insertBefore(createGradientSwatch(defaultColor1), addBtn);
+          container.insertBefore(createGradientSwatch(defaultColor2), addBtn);
+          updateArrows();
 
           // Add button click
           addBtn.addEventListener("click", () => {
-            const newSwatch = createSwatch(defaultColor1);
+            const newSwatch = createGradientSwatch(defaultColor1);
             newSwatch.style.opacity = "0";
-            newSwatch.style.transform = "scale(0.5)";
+            newSwatch.style.transform = "scale(0.8)";
             container.insertBefore(newSwatch, addBtn);
 
-            // Trigger animation
             requestAnimationFrame(() => {
-              newSwatch.style.transition =
-                "all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
+              newSwatch.style.transition = "all 0.3s ease";
               newSwatch.style.opacity = "1";
               newSwatch.style.transform = "scale(1)";
               setTimeout(() => {
-                newSwatch.style.transition = "";
+                newSwatch.style.transition =
+                  "transform 0.2s, border-color 0.2s";
               }, 300);
             });
-            updateCount(container);
+            updateArrows();
           });
 
-          // FLIP Animation
-          container.addEventListener("dragover", e => {
+          // Pointer Custom Drag Logic
+          let draggingItem = null;
+          let ghost = null;
+          let startX, startY, initialX, initialY;
+
+          container.addEventListener("pointerdown", e => {
+            const handle = e.target.closest(".drag-handle");
+            if (!handle) return;
+
             e.preventDefault();
-            const draggingNode = container.querySelector(".dragging");
-            if (!draggingNode) return;
+            draggingItem = handle.closest(".color-swatch-wrapper");
 
-            const afterElement = getDragAfterElement(container, e.clientX);
-            const nextSibling = draggingNode.nextElementSibling;
+            const rect = draggingItem.getBoundingClientRect();
+            ghost = draggingItem.cloneNode(true);
+            ghost.classList.add("ghost");
+            document.body.appendChild(ghost);
 
-            if (afterElement === draggingNode || afterElement === nextSibling)
-              return;
+            ghost.style.position = "fixed";
+            ghost.style.top = rect.top + "px";
+            ghost.style.left = rect.left + "px";
+            ghost.style.width = rect.width + "px";
+            ghost.style.height = rect.height + "px";
+            ghost.style.margin = "0";
 
-            const swatches = [
-              ...container.querySelectorAll(".color-swatch-wrapper"),
-            ];
-            const oldPos = new Map();
-            swatches.forEach(sw => {
-              oldPos.set(sw, sw.getBoundingClientRect().left);
-              sw.style.transition = "none";
+            startX = e.clientX;
+            startY = e.clientY;
+            initialX = rect.left;
+            initialY = rect.top;
+
+            draggingItem.style.opacity = "0.2";
+
+            document.addEventListener("pointermove", onPointerMove, {
+              passive: false,
             });
-
-            if (afterElement == null) {
-              container.insertBefore(draggingNode, addBtn);
-            } else {
-              container.insertBefore(draggingNode, afterElement);
-            }
-
-            swatches.forEach(sw => {
-              const oldLeft = oldPos.get(sw);
-              const newLeft = sw.getBoundingClientRect().left;
-              const deltaX = oldLeft - newLeft;
-              if (deltaX !== 0) {
-                sw.style.transform = `translateX(${deltaX}px)`;
-              }
-            });
-
-            requestAnimationFrame(() => {
-              swatches.forEach(sw => {
-                sw.style.transition =
-                  "transform 0.3s cubic-bezier(0.25, 1, 0.5, 1)";
-                sw.style.transform = "translateX(0)";
-              });
-              setTimeout(() => {
-                swatches.forEach(sw => {
-                  if (
-                    sw.style.transform === "translateX(0px)" ||
-                    sw.style.transform === "translateX(0)"
-                  ) {
-                    sw.style.transition = "";
-                    sw.style.transform = "";
-                  }
-                });
-              }, 300);
-            });
+            document.addEventListener("pointerup", onPointerUp);
+            document.addEventListener("pointercancel", onPointerUp);
           });
+
+          function onPointerMove(e) {
+            if (!draggingItem) return;
+            e.preventDefault();
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            ghost.style.left = initialX + dx + "px";
+            ghost.style.top = initialY + dy + "px";
+
+            const elements = document.elementsFromPoint(e.clientX, e.clientY);
+            const target = elements.find(
+              el =>
+                el.classList.contains("color-swatch-wrapper") &&
+                el !== draggingItem &&
+                !el.classList.contains("ghost"),
+            );
+
+            if (target && target.parentNode === container) {
+              const targetRect = target.getBoundingClientRect();
+              const targetCenter = targetRect.left + targetRect.width / 2;
+
+              if (e.clientX < targetCenter) {
+                container.insertBefore(draggingItem, target);
+              } else {
+                container.insertBefore(draggingItem, target.nextSibling);
+              }
+              updateArrows();
+            }
+          }
+
+          function onPointerUp(e) {
+            if (!draggingItem) return;
+            draggingItem.style.opacity = "1";
+            if (ghost) ghost.remove();
+
+            draggingItem = null;
+            ghost = null;
+
+            document.removeEventListener("pointermove", onPointerMove);
+            document.removeEventListener("pointerup", onPointerUp);
+            document.removeEventListener("pointercancel", onPointerUp);
+
+            updateArrows();
+          }
         }
 
         initColorList("dc-list", "#000000", "#2a3cdf");
         initColorList("csc-list", "#000000", "#2a3cdf");
         initColorList("cdc-list", "#000000", "#2a3cdf");
-        // Background defaults to light colors so it looks visible on screen
         initColorList("bg-list", "#ffffff", "#e0e0e0");
       });
     </script>
