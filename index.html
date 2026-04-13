@@ -74,26 +74,67 @@
         text-rendering: optimizeLegibility;
       }
 
-      /* Global Reset to prevent phantom dots/focus rings on interactive elements */
+      /* ==============================================
+         GLOBAL ANTI-ARTIFACT BUG FIXES
+         ============================================== */
+
+      /* Fix phantom red borders/shadows in Firefox/Safari causing artifact glitches */
+      :-moz-ui-invalid {
+        box-shadow: none !important;
+        outline: 1px solid transparent !important;
+      }
+      :invalid,
+      :required {
+        box-shadow: none !important;
+        outline: 1px solid transparent !important;
+      }
+
+      /* Completely strip WebKit validation styling anomalies */
+      ::-webkit-validation-bubble-message,
+      ::-webkit-validation-bubble-arrow,
+      ::-webkit-validation-bubble-arrow-clipper,
+      ::-webkit-validation-bubble {
+        display: none !important;
+      }
+
+      /* Global Reset to prevent phantom dots/focus rings on interactive elements
+         Using a 1px transparent outline retains Edge/Safari GPU anti-aliasing without the visual ring */
       button,
-      input[type="range"],
+      input,
+      textarea,
+      select,
       .pill-label,
-      .color-swatch-wrapper {
-        outline: none !important;
+      .color-swatch-wrapper,
+      .custom-select-trigger,
+      .custom-select-menu,
+      .cs-item,
+      .cp-preset,
+      .cp-swatch-display {
+        outline: 1px solid transparent !important;
       }
 
       ::-moz-focus-inner,
       ::-moz-focus-outer {
         border: 0 !important;
-        outline: none !important;
+        outline: 1px solid transparent !important;
       }
 
-      /* Fix phantom red borders/shadows in Firefox/Safari causing artifact glitches */
-      :-moz-ui-invalid {
-        box-shadow: none !important;
-      }
-      :invalid {
-        box-shadow: none !important;
+      /* Fix subpixel background bleeding (white lines) on elements with solid borders */
+      .custom-select-trigger,
+      .custom-select-menu,
+      input[type="text"],
+      input[type="url"],
+      input[type="number"],
+      input[type="email"],
+      input[type="tel"],
+      input[type="password"],
+      textarea,
+      .native-select,
+      .color-swatch-wrapper,
+      .cp-popup,
+      .settings-panel,
+      .cp-input-group input {
+        background-clip: padding-box;
       }
 
       /* Remove default selection highlight artifacts from interactive UI elements globally */
@@ -308,6 +349,7 @@
         transition: color 0.3s;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: color;
       }
       .tab-slider {
@@ -323,6 +365,7 @@
         /* Hardware Accel */
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         will-change: transform;
       }
@@ -396,6 +439,7 @@
           transform 0.3s ease;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: transform, border-color, box-shadow;
       }
       textarea {
@@ -411,7 +455,7 @@
       input[type="password"]:focus,
       textarea:focus,
       .native-select:focus {
-        outline: none;
+        outline: 1px solid transparent !important;
         border-color: var(--primary);
         box-shadow: 0 0 0 3px var(--primary-glow);
         transform: translate3d(0, -2px, 0);
@@ -459,6 +503,7 @@
           border-color 0.2s ease;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: background-color, border-color;
       }
       .btn-remove:hover {
@@ -471,6 +516,7 @@
         display: none;
         will-change: transform, opacity;
         position: relative;
+        transform-style: preserve-3d;
       }
       .dynamic-section.active {
         display: block;
@@ -496,6 +542,7 @@
           background-color 0.2s ease;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: border-color, background-color;
       }
       .file-dropzone:hover,
@@ -613,11 +660,12 @@
           transform 0.3s ease;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: transform, border-color, box-shadow;
       }
       .custom-select-trigger:focus,
       .custom-select-wrapper.open .custom-select-trigger {
-        outline: none;
+        outline: 1px solid transparent !important;
         border-color: var(--primary);
         box-shadow: 0 0 0 3px var(--primary-glow);
         transform: translate3d(0, -2px, 0);
@@ -642,6 +690,7 @@
         transition: color 0.2s;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: color;
         flex-shrink: 0;
       }
@@ -654,8 +703,9 @@
         flex-shrink: 0;
         color: var(--text-muted);
         pointer-events: none;
-        /* Hardware accel without backface-visibility so we can see it flipped 180deg */
+        /* Hardware accel */
         transform: rotateX(0deg) translate3d(0, 0, 0);
+        transform-style: preserve-3d;
         transition:
           transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
           color 0.2s ease;
@@ -687,6 +737,7 @@
           visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1),
           transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: opacity, transform, visibility;
 
         display: block;
@@ -743,6 +794,7 @@
           color 0.2s;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: background-color, color;
       }
       .cs-item:last-child {
@@ -799,6 +851,7 @@
         /* Kills subpixel text jittering */
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change:
           transform, background-color, border-color, color, box-shadow;
       }
@@ -838,6 +891,7 @@
         transition: color 0.3s;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: color;
       }
       .segmented-control input:checked + label {
@@ -857,6 +911,7 @@
         /* Hardware Accel */
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         will-change: transform;
       }
@@ -899,15 +954,15 @@
         width: 100%;
         background: transparent;
         cursor: pointer;
-        outline: none !important;
-        border: none !important;
         color: transparent;
         caret-color: transparent; /* Kills stray blinking text cursors */
+        outline: 1px solid transparent !important;
+        border: none !important;
         /* MOBILE FIX: Prevent page scroll when interacting with sliders */
         touch-action: none;
       }
       .modern-range:focus {
-        outline: none !important;
+        outline: 1px solid transparent !important;
       }
       .modern-range::-webkit-slider-runnable-track {
         width: 100%;
@@ -945,6 +1000,7 @@
         margin-top: -6px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         transform: translate3d(0, 0, 0);
         transition:
           transform 0.2s,
@@ -999,6 +1055,7 @@
         flex-shrink: 0;
         /* Force hardware acceleration for completely fluid flip transitions */
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         transform: translate3d(0, 0, 0);
       }
 
@@ -1018,6 +1075,7 @@
         transition: border-color 0.2s;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: border-color, transform, box-shadow;
       }
       .color-swatch-wrapper:hover {
@@ -1071,6 +1129,7 @@
           transform 0.2s;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: color, transform;
       }
       .btn-delete-swatch:hover {
@@ -1094,6 +1153,7 @@
         user-select: none;
         pointer-events: none;
         backface-visibility: hidden;
+        transform-style: preserve-3d;
       }
 
       .btn-add-color {
@@ -1119,6 +1179,7 @@
           transform 0.2s ease;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: border-color, color, background-color, transform;
       }
       .btn-add-color:hover {
@@ -1151,6 +1212,7 @@
         transition: color 0.2s;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: color;
       }
       .switch-wrapper:hover {
@@ -1178,6 +1240,7 @@
           border-color 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: background-color, border-color;
       }
       .slider:before {
@@ -1196,6 +1259,7 @@
           background-color 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: transform, background-color;
       }
       .toggle-switch:checked ~ .bg-header-flex .slider,
@@ -1239,6 +1303,7 @@
         justify-content: center;
         gap: 8px;
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         transform: translate3d(0, 0, 0);
         will-change: transform, box-shadow, background-color;
         transition:
@@ -1266,7 +1331,6 @@
         border: 1px solid var(--border-subtle);
         cursor: pointer;
         position: relative;
-        outline: none;
         background: #000;
 
         /* Hardware accel */
@@ -1276,6 +1340,7 @@
           box-shadow 0.3s;
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: border-color, transform, box-shadow;
       }
       .color-picker-btn:hover {
@@ -1302,6 +1367,9 @@
           0 0 0 1px rgba(255, 255, 255, 0.04);
         display: none;
         animation: pickerIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        transform-style: preserve-3d;
       }
       .cp-popup.visible {
         display: block;
@@ -1406,6 +1474,7 @@
           0 1px 6px rgba(0, 0, 0, 0.6),
           0 0 0 1px rgba(0, 0, 0, 0.2);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         transform: translate3d(-50%, -50%, 0);
         pointer-events: none;
         transition: transform 0.1s;
@@ -1447,7 +1516,7 @@
         transition:
           border-color 0.2s,
           box-shadow 0.2s;
-        outline: none;
+        background-clip: padding-box;
       }
       .cp-input-group input:focus {
         border-color: var(--primary);
@@ -1483,6 +1552,7 @@
         /* Hardware accel */
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         transition:
           transform 0.15s,
           border-color 0.15s;
@@ -1505,6 +1575,7 @@
         /* Hardware accel */
         transform: translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         transition:
           transform 0.15s,
           box-shadow 0.2s;
@@ -1606,6 +1677,7 @@
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         transform: rotate(0deg) translate3d(0, 0, 0);
         backface-visibility: hidden;
+        transform-style: preserve-3d;
         will-change: transform;
       }
       .faq-item[open] .faq-icon {
