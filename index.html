@@ -2,7 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- MOBILE FIX: Lock scale to prevent double-tap zooming & pinch zooming while interacting -->
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
     <meta
       name="description"
       content="Generate custom QR codes instantly. Customize shapes, colors, and download in PNG, SVG, or JPG."
@@ -45,7 +49,16 @@
       *::before,
       *::after {
         box-sizing: border-box;
+        /* FIX: Removes the blue highlight outline that pops up on tap on mobile phones */
+        -webkit-tap-highlight-color: transparent !important;
       }
+
+      html {
+        /* Native thin scrollbar for Firefox (Global) */
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+      }
+
       body {
         margin: 0;
         font-family: "Inter", sans-serif;
@@ -55,43 +68,105 @@
         display: flex;
         flex-direction: column;
         overflow-x: hidden;
-        /* Fix text rendering shift/snapping during CSS animations */
+        /* Hardware accelerated anti-aliasing fixes subpixel text jitters globally */
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
       }
 
-      /* Accessibility */
+      /* Global Reset to prevent phantom dots/focus rings on interactive elements */
+      button,
+      input[type="range"],
+      .pill-label,
+      .color-swatch-wrapper {
+        outline: none !important;
+      }
+
+      ::-moz-focus-inner,
+      ::-moz-focus-outer {
+        border: 0 !important;
+        outline: none !important;
+      }
+
+      /* Fix phantom red borders/shadows in Firefox/Safari causing artifact glitches */
+      :-moz-ui-invalid {
+        box-shadow: none !important;
+      }
+      :invalid {
+        box-shadow: none !important;
+      }
+
+      /* Remove default selection highlight artifacts from interactive UI elements globally */
+      .modern-range,
+      .segmented-control,
+      .switch-wrapper,
+      .pill-label,
+      .tab-label {
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+      }
+
+      /* ==============================================
+         GLOBAL SCROLLBAR (THIN & TRANSPARENT TRACK)
+         ============================================== */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background-color: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.15);
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: rgba(255, 255, 255, 0.25);
+      }
+
+      /* Bulletproof Accessible Hidden Class - Prevents any layout shift */
       .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        border: 0;
+        position: absolute !important;
+        width: 1px !important;
+        height: 1px !important;
+        padding: 0 !important;
+        margin: -1px !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
       }
 
-      /* Global Animations */
+      /* Hardware Accelerated Global Animations */
       @keyframes fadeSlideUp {
         0% {
           opacity: 0;
-          transform: translateY(20px);
+          transform: translate3d(0, 20px, 0);
         }
         100% {
           opacity: 1;
-          transform: translateY(0);
+          transform: translate3d(0, 0, 0);
+        }
+      }
+
+      @keyframes fadeIn {
+        0% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
         }
       }
 
       @keyframes pickerIn {
         0% {
           opacity: 0;
-          transform: translateY(8px) scale(0.97);
+          transform: translate3d(0, 8px, 0) scale(0.97);
         }
         100% {
           opacity: 1;
-          transform: translateY(0) scale(1);
+          transform: translate3d(0, 0, 0) scale(1);
         }
       }
 
@@ -124,12 +199,15 @@
         margin: 0;
       }
 
+      /* Base z-index structural fixes to prevent dropdown overlap from bottom elements */
       .qr-form {
         display: flex;
         flex-direction: column;
         align-items: center;
         width: 100%;
         animation: fadeSlideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        position: relative;
+        z-index: 50;
       }
 
       /* Grid Layout */
@@ -139,7 +217,7 @@
         gap: 24px;
         width: 100%;
         max-width: 1000px;
-        align-items: start;
+        align-items: start; /* Flushes both panels perfectly to the top */
       }
 
       /* Left Panel: Preview Area */
@@ -152,7 +230,12 @@
         align-items: center;
         justify-content: flex-start;
         padding: 40px;
-        position: relative;
+
+        /* Sticky Positioning - Matches main padding so it doesn't jump */
+        position: sticky;
+        top: 40px;
+        z-index: 10;
+
         min-height: 450px;
         transition: border-color 0.4s ease;
       }
@@ -161,8 +244,9 @@
       }
 
       .preview-box {
-        width: 280px;
-        height: 280px;
+        width: 100%;
+        max-width: 280px;
+        aspect-ratio: 1;
         background: transparent;
         border: 1px solid var(--border-subtle);
         border-radius: var(--radius-sm);
@@ -183,13 +267,12 @@
 
       /* Right Panel: Settings Card */
       .settings-panel {
-        background: var(--bg-card);
+        background: var(--bg-panel);
         border: 1px solid var(--border-subtle);
         border-radius: var(--radius-lg);
         padding: 24px;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
       }
       .settings-title {
         font-size: 1.1rem;
@@ -221,7 +304,11 @@
         cursor: pointer;
         position: relative;
         z-index: 2;
+        /* Hardware Accel */
         transition: color 0.3s;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: color;
       }
       .tab-slider {
         position: absolute;
@@ -231,9 +318,13 @@
         width: calc((100% - 12px) / 3);
         background: var(--bg-card);
         border-radius: var(--radius-sm);
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
         z-index: 1;
+        /* Hardware Accel */
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
         transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        will-change: transform;
       }
       #tab1:checked ~ .tabs .tab-label[for="tab1"],
       #tab2:checked ~ .tabs .tab-label[for="tab2"],
@@ -241,13 +332,13 @@
         color: var(--text-main);
       }
       #tab1:checked ~ .tabs .tab-slider {
-        transform: translateX(0);
+        transform: translate3d(0, 0, 0);
       }
       #tab2:checked ~ .tabs .tab-slider {
-        transform: translateX(100%);
+        transform: translate3d(100%, 0, 0);
       }
       #tab3:checked ~ .tabs .tab-slider {
-        transform: translateX(200%);
+        transform: translate3d(200%, 0, 0);
       }
 
       /* Content Tab Fade Logic */
@@ -265,6 +356,7 @@
       /* Inputs & Shared elements */
       .form-group {
         margin-bottom: 20px;
+        position: relative;
       }
       .preview-settings .form-group {
         margin-bottom: 0;
@@ -293,10 +385,18 @@
         border-radius: var(--radius-sm);
         font-family: inherit;
         font-size: 0.9rem;
-        transition: all 0.3s ease;
         box-shadow: 0 0 0 0 transparent;
         appearance: none;
         -webkit-appearance: none;
+
+        /* Hardware accel */
+        transition:
+          border-color 0.3s ease,
+          box-shadow 0.3s ease,
+          transform 0.3s ease;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: transform, border-color, box-shadow;
       }
       textarea {
         resize: vertical;
@@ -314,19 +414,12 @@
         outline: none;
         border-color: var(--primary);
         box-shadow: 0 0 0 3px var(--primary-glow);
-        transform: translateY(-2px);
+        transform: translate3d(0, -2px, 0);
       }
       input[type="number"]::-webkit-inner-spin-button,
       input[type="number"]::-webkit-outer-spin-button {
         -webkit-appearance: none;
         margin: 0;
-      }
-      .native-select {
-        cursor: pointer;
-      }
-      .native-select option {
-        background-color: var(--bg-panel);
-        color: var(--text-main);
       }
 
       .input-group {
@@ -349,21 +442,6 @@
         letter-spacing: 0.05em;
       }
 
-      input[type="file"]::file-selector-button {
-        background: var(--bg-body);
-        color: var(--text-main);
-        border: 1px solid var(--border-subtle);
-        padding: 8px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        margin-right: 12px;
-        font-size: 0.8rem;
-        transition: all 0.2s ease;
-      }
-      input[type="file"]::file-selector-button:hover {
-        background: var(--border-hover);
-      }
-
       .btn-remove {
         background: rgba(255, 85, 85, 0.1);
         color: #ff5555;
@@ -373,8 +451,15 @@
         cursor: pointer;
         font-size: 0.8rem;
         font-weight: 500;
-        transition: all 0.2s ease;
-        height: 100%;
+        flex-shrink: 0;
+
+        /* Hardware accel */
+        transition:
+          background-color 0.2s ease,
+          border-color 0.2s ease;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: background-color, border-color;
       }
       .btn-remove:hover {
         background: rgba(255, 85, 85, 0.2);
@@ -385,6 +470,7 @@
       .dynamic-section {
         display: none;
         will-change: transform, opacity;
+        position: relative;
       }
       .dynamic-section.active {
         display: block;
@@ -392,12 +478,118 @@
       }
 
       /* =========================================
-         MODERN CUSTOM DROPDOWN
+         MODERN DRAG & DROP LOGO AREA 
+         ========================================= */
+      .file-dropzone {
+        border: 2px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        background: var(--bg-panel);
+        padding: 8px;
+        text-align: left;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+
+        /* Hardware accel */
+        transition:
+          border-color 0.2s ease,
+          background-color 0.2s ease;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: border-color, background-color;
+      }
+      .file-dropzone:hover,
+      .file-dropzone.dragover {
+        border-color: rgba(42, 60, 223, 0.6);
+        background: rgba(42, 60, 223, 0.05);
+      }
+
+      .dropzone-inner {
+        display: flex;
+        align-items: center;
+        background: var(--bg-input);
+        padding: 12px 16px;
+        border-radius: var(--radius-sm);
+        border: 2px dashed var(--border-subtle);
+        width: 100%;
+        min-height: 72px;
+        gap: 12px;
+      }
+
+      .dropzone-icon,
+      .preview-icon {
+        width: 26px;
+        height: 26px;
+        color: #6366f1;
+        flex-shrink: 0;
+      }
+
+      .dropzone-text {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 3px;
+        min-width: 0;
+      }
+
+      .dropzone-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-main);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+      }
+
+      .dropzone-sub {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        width: 100%;
+      }
+
+      #dropzone-filename {
+        flex: 1;
+        text-align: center;
+        font-size: 0.85rem;
+        color: var(--text-main);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-width: 0;
+      }
+
+      .dropzone-pills {
+        display: flex;
+        flex-shrink: 0;
+      }
+
+      .drop-pill {
+        background: var(--bg-panel);
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 500;
+        border: 1px solid var(--border-subtle);
+      }
+
+      /* =========================================
+         MODERN CUSTOM DROPDOWN REDESIGN
          ========================================= */
       .custom-select-wrapper {
         position: relative;
         width: 100%;
         user-select: none;
+        z-index: 1;
+      }
+      .custom-select-wrapper.open {
+        z-index: 99999;
       }
       .custom-select-trigger {
         width: 100%;
@@ -408,22 +600,39 @@
         border-radius: var(--radius-sm);
         font-size: 0.9rem;
         cursor: pointer;
-        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 12px;
+        min-width: 0;
+
+        /* Hardware accel */
+        transition:
+          border-color 0.3s ease,
+          box-shadow 0.3s ease,
+          transform 0.3s ease;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: transform, border-color, box-shadow;
       }
       .custom-select-trigger:focus,
       .custom-select-wrapper.open .custom-select-trigger {
         outline: none;
         border-color: var(--primary);
         box-shadow: 0 0 0 3px var(--primary-glow);
-        transform: translateY(-2px);
+        transform: translate3d(0, -2px, 0);
       }
       .custom-select-value {
         display: flex;
         align-items: center;
         gap: 10px;
+        min-width: 0;
+        flex: 1;
+      }
+      .custom-select-value span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .custom-select-value svg,
       .cs-item svg {
@@ -431,21 +640,29 @@
         height: 16px;
         color: var(--text-muted);
         transition: color 0.2s;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: color;
+        flex-shrink: 0;
       }
+
+      /* Redesigned completely isolated, jitter-free arrow wrapper */
       .select-arrow {
-        position: absolute;
-        right: 14px;
-        top: 50%;
-        transform: translateY(-50%);
-        pointer-events: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
         color: var(--text-muted);
+        pointer-events: none;
+        /* Hardware accel without backface-visibility so we can see it flipped 180deg */
+        transform: rotateX(0deg) translate3d(0, 0, 0);
         transition:
-          transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
-          color 0.3s;
+          transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+          color 0.2s ease;
+        will-change: transform, color;
       }
-      .custom-select-wrapper.open > .custom-select-trigger .select-arrow,
-      .custom-select-wrapper.open > .select-arrow {
-        transform: translateY(-50%) rotate(180deg);
+      .custom-select-wrapper.open .select-arrow {
+        transform: rotateX(180deg) translate3d(0, 0, 0);
         color: var(--primary);
       }
 
@@ -462,44 +679,74 @@
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
-        transform: translateY(-10px);
-        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        max-height: 260px;
-        overflow-y: auto;
+
+        /* Hardware accel */
+        transform: translate3d(0, -10px, 0);
+        transition:
+          opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+          visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+          transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        backface-visibility: hidden;
+        will-change: opacity, transform, visibility;
+
+        display: block;
         padding: 6px;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
+        max-height: 252px;
+
+        overflow-y: auto;
+        overflow-x: hidden;
+
+        /* Force explicitly thin native scrollbar for the dropdowns specifically (Firefox) */
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
       }
+
+      /* Force explicitly thin native scrollbar for the dropdowns specifically (Chrome/Safari) */
       .custom-select-menu::-webkit-scrollbar {
-        width: 6px;
+        width: 4px;
       }
       .custom-select-menu::-webkit-scrollbar-track {
         background: transparent;
+        margin: 4px 0;
       }
       .custom-select-menu::-webkit-scrollbar-thumb {
-        background: var(--border-subtle);
+        background-color: rgba(255, 255, 255, 0.15);
         border-radius: 10px;
       }
       .custom-select-menu::-webkit-scrollbar-thumb:hover {
-        background: var(--border-hover);
+        background-color: rgba(255, 255, 255, 0.25);
       }
+
       .custom-select-wrapper.open .custom-select-menu {
         opacity: 1;
         visibility: visible;
         pointer-events: auto;
-        transform: translateY(0);
+        transform: translate3d(0, 0, 0);
       }
+
       .cs-item {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 10px 12px;
+        padding: 0 12px;
+        height: 38px;
+        margin-bottom: 2px;
         font-size: 0.85rem;
         color: var(--text-muted);
         cursor: pointer;
         border-radius: 6px;
-        transition: all 0.2s;
+        flex-shrink: 0;
+
+        /* Hardware accel */
+        transition:
+          background-color 0.2s,
+          color 0.2s;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: background-color, color;
+      }
+      .cs-item:last-child {
+        margin-bottom: 0;
       }
       .cs-item:hover {
         background: var(--bg-input);
@@ -526,7 +773,6 @@
       .pill-grid.format-pills {
         justify-content: center;
       }
-
       .pill-label {
         display: flex;
         align-items: center;
@@ -540,18 +786,31 @@
         font-size: 0.8rem;
         color: var(--text-muted);
         cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1);
         line-height: 1;
-        user-select: none;
+
+        /* Hardware Accelerated Explicit Transitions */
+        transition:
+          background-color 0.2s cubic-bezier(0.25, 1, 0.5, 1),
+          border-color 0.2s cubic-bezier(0.25, 1, 0.5, 1),
+          color 0.2s cubic-bezier(0.25, 1, 0.5, 1),
+          box-shadow 0.2s cubic-bezier(0.25, 1, 0.5, 1),
+          transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+
+        /* Kills subpixel text jittering */
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change:
+          transform, background-color, border-color, color, box-shadow;
       }
       .pill-label:active {
-        transform: scale(0.94);
+        transform: scale(0.94) translate3d(0, 0, 0);
       }
       .sr-only:checked + .pill-label {
         color: var(--text-main);
         border-color: var(--primary);
         background: var(--primary-light);
         box-shadow: 0 4px 12px rgba(42, 60, 223, 0.2);
+        /* Note: Transform removed here so the active shrink animation works even when selected */
       }
 
       /* Modern Color Selection Logic */
@@ -562,25 +821,29 @@
         padding: 4px;
         border-radius: var(--radius-sm);
         margin-bottom: 16px;
-        user-select: none;
+        height: 40px;
       }
       .segmented-control label {
         flex: 1;
-        text-align: center;
-        padding: 8px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 0.85rem;
         margin: 0;
         color: var(--text-muted);
         cursor: pointer;
         position: relative;
         z-index: 2;
+        /* Hardware Accel */
         transition: color 0.3s;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: color;
       }
       .segmented-control input:checked + label {
         color: var(--text-main);
         font-weight: 500;
       }
-
       .segmented-slider {
         position: absolute;
         top: 4px;
@@ -589,27 +852,16 @@
         width: calc(50% - 4px);
         background: var(--bg-card);
         border-radius: 6px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 0 6px rgba(0, 0, 0, 0.4);
         z-index: 1;
+        /* Hardware Accel */
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
         transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        will-change: transform;
       }
       .segmented-control input:nth-of-type(2):checked ~ .segmented-slider {
-        transform: translateX(100%);
-      }
-
-      .segmented-control.small-seg {
-        margin-bottom: 16px;
-        padding: 3px;
-      }
-      .segmented-control.small-seg label {
-        padding: 6px 0;
-        font-size: 0.75rem;
-      }
-      .segmented-control.small-seg .segmented-slider {
-        top: 3px;
-        bottom: 3px;
-        left: 3px;
-        width: calc(50% - 3px);
+        transform: translate3d(100%, 0, 0);
       }
 
       .mode-content {
@@ -617,6 +869,7 @@
         flex-direction: column;
         will-change: transform, opacity;
         animation: fadeSlideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        transform-style: preserve-3d;
       }
 
       .angle-group {
@@ -639,11 +892,22 @@
         font-weight: 500;
       }
 
+      /* Range Slider Heavy Reset */
       .modern-range {
         -webkit-appearance: none;
+        appearance: none;
         width: 100%;
         background: transparent;
         cursor: pointer;
+        outline: none !important;
+        border: none !important;
+        color: transparent;
+        caret-color: transparent; /* Kills stray blinking text cursors */
+        /* MOBILE FIX: Prevent page scroll when interacting with sliders */
+        touch-action: none;
+      }
+      .modern-range:focus {
+        outline: none !important;
       }
       .modern-range::-webkit-slider-runnable-track {
         width: 100%;
@@ -651,65 +915,125 @@
         background: var(--bg-input);
         border-radius: 3px;
         transition: background 0.3s;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none;
+      }
+      .modern-range::-moz-range-track {
+        width: 100%;
+        height: 6px;
+        background: var(--bg-input);
+        border-radius: 3px;
+        transition: background 0.3s;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none;
       }
       .modern-range:hover::-webkit-slider-runnable-track {
         background: var(--border-hover);
       }
+      .modern-range:hover::-moz-range-track {
+        background: var(--border-hover);
+      }
+
       .modern-range::-webkit-slider-thumb {
         -webkit-appearance: none;
         height: 18px;
         width: 18px;
         border-radius: 50%;
-        background: #fff;
+        background: var(--primary);
         margin-top: -6px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        backface-visibility: hidden;
+        transform: translate3d(0, 0, 0);
+        transition:
+          transform 0.2s,
+          background 0.2s;
+        border: none !important;
+      }
+      .modern-range::-moz-range-thumb {
+        height: 18px;
+        width: 18px;
+        border-radius: 50%;
+        background: var(--primary);
+        border: none !important;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
         transition:
           transform 0.2s,
           background 0.2s;
       }
       .modern-range::-webkit-slider-thumb:hover {
-        transform: scale(1.2);
-        background: var(--primary);
+        transform: scale(1.2) translateZ(0);
+        background: var(--primary-hover);
+      }
+      .modern-range::-moz-range-thumb:hover {
+        transform: scale(1.2) translateZ(0);
+        background: var(--primary-hover);
       }
       .modern-range:active::-webkit-slider-thumb {
-        transform: scale(0.9);
+        transform: scale(0.9) translateZ(0);
+      }
+      .modern-range:active::-moz-range-thumb {
+        transform: scale(0.9) translateZ(0);
       }
 
-      /* Modern Gradient Drag and Drop System */
+      /* ==============================================
+         MODERN GRADIENT DRAG & DROP ANIMATION SYSTEM
+         ============================================== */
+
+      /* Primary Flex Container */
       .color-drag-container {
         display: flex;
         align-items: center;
         flex-wrap: wrap;
-        gap: 8px; /* Compact gap as arrows space it out naturally */
+        gap: 8px; /* Uses native gap for automatic matrix spacing */
         min-height: 48px;
         position: relative;
       }
 
+      /* Group Wrapper for Pill + Arrow */
+      .swatch-group {
+        display: flex;
+        align-items: center;
+        gap: 8px; /* Ensures space between Pill and Arrow */
+        flex-shrink: 0;
+        /* Force hardware acceleration for completely fluid flip transitions */
+        backface-visibility: hidden;
+        transform: translate3d(0, 0, 0);
+      }
+
+      /* Inner Color Pill */
       .color-swatch-wrapper {
         display: flex;
         align-items: center;
         background: var(--bg-input);
         border: 1px solid var(--border-subtle);
-        border-radius: 20px;
+        border-radius: var(--radius-sm);
         padding: 4px 8px;
         gap: 8px;
-        user-select: none;
         touch-action: none;
-        transition:
-          transform 0.2s,
-          border-color 0.2s;
         flex-shrink: 0;
+
+        /* Hardware accel */
+        transition: border-color 0.2s;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: border-color, transform, box-shadow;
       }
       .color-swatch-wrapper:hover {
         border-color: var(--border-hover);
       }
+
+      /* Visual style for element actively being dragged */
       .color-swatch-wrapper.ghost {
         opacity: 0.9 !important;
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
-        transform: scale(1.05) rotate(2deg) !important;
+        transform: scale(1.05) rotate(2deg) translateZ(0) !important;
         transition: transform 0.1s ease !important;
         cursor: grabbing !important;
         z-index: 9999 !important;
+        /* MOBILE FIX: Prevent ghost from blocking document.elementsFromPoint logic on touchscreens */
+        pointer-events: none !important;
       }
 
       .drag-handle {
@@ -720,6 +1044,8 @@
         padding: 4px;
         margin-left: -2px;
         transition: color 0.2s;
+        /* MOBILE FIX: Prevent page scroll when initiating color drag */
+        touch-action: none;
       }
       .drag-handle:hover {
         color: var(--text-main);
@@ -738,18 +1064,27 @@
         cursor: pointer;
         padding: 4px;
         margin-right: -2px;
+
+        /* Hardware accel */
         transition:
           color 0.2s,
           transform 0.2s;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: color, transform;
       }
       .btn-delete-swatch:hover {
         color: #ff5555;
-        transform: scale(1.1);
+        transform: scale(1.1) translate3d(0, 0, 0);
       }
-      .color-drag-container[data-count="1"] .btn-delete-swatch {
+
+      /* Instant vanishing of drag and delete buttons when only 1 item exists */
+      .color-drag-container[data-count="1"] .btn-delete-swatch,
+      .color-drag-container[data-count="1"] .drag-handle {
         display: none !important;
       }
 
+      /* Native Arrow Style */
       .stop-arrow {
         color: var(--text-muted);
         display: flex;
@@ -758,7 +1093,7 @@
         opacity: 0.5;
         user-select: none;
         pointer-events: none;
-        margin: 0 2px;
+        backface-visibility: hidden;
       }
 
       .btn-add-color {
@@ -772,19 +1107,28 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.2s ease;
         padding: 0;
-        margin: 0 0 0 4px;
+        margin: 0;
         flex-shrink: 0;
+
+        /* Hardware accel */
+        transition:
+          border-color 0.2s ease,
+          color 0.2s ease,
+          background-color 0.2s ease,
+          transform 0.2s ease;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: border-color, color, background-color, transform;
       }
       .btn-add-color:hover {
         border-color: var(--primary);
         color: var(--primary);
         background: var(--primary-light);
-        transform: scale(1.08);
+        transform: scale(1.08) translate3d(0, 0, 0);
       }
       .btn-add-color:active {
-        transform: scale(0.95);
+        transform: scale(0.95) translate3d(0, 0, 0);
       }
 
       /* Base Toggle Switch Styling */
@@ -802,8 +1146,12 @@
         font-weight: 400;
         color: var(--text-muted);
         cursor: pointer;
-        user-select: none;
-        transition: 0.2s;
+
+        /* Hardware accel */
+        transition: color 0.2s;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: color;
       }
       .switch-wrapper:hover {
         color: var(--text-main);
@@ -822,8 +1170,15 @@
         bottom: 0;
         background-color: var(--bg-input);
         border: 1px solid var(--border-subtle);
-        transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         border-radius: 20px;
+
+        /* Hardware accel */
+        transition:
+          background-color 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+          border-color 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: background-color, border-color;
       }
       .slider:before {
         position: absolute;
@@ -833,11 +1188,16 @@
         left: 3px;
         bottom: 3px;
         background-color: var(--text-muted);
-        transition: 0.3s cubic-bezier(0.25, 1, 0.5, 1);
         border-radius: 50%;
-      }
 
-      /* Unified Routing for Toggle Switch states */
+        /* Hardware accel */
+        transition:
+          transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+          background-color 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: transform, background-color;
+      }
       .toggle-switch:checked ~ .bg-header-flex .slider,
       .toggle-switch:checked ~ .switch-wrapper .slider {
         background-color: var(--primary);
@@ -846,7 +1206,7 @@
       .toggle-switch:checked ~ .bg-header-flex .slider:before,
       .toggle-switch:checked ~ .switch-wrapper .slider:before {
         background-color: #fff;
-        transform: translateX(16px);
+        transform: translate3d(16px, 0, 0);
       }
       .toggle-switch:focus-visible ~ .bg-header-flex .slider,
       .toggle-switch:focus-visible ~ .switch-wrapper .slider {
@@ -854,7 +1214,7 @@
         outline-offset: 2px;
       }
 
-      /* Smoothly disable gradient picker when transparent */
+      /* Smoothly dim transparent elements */
       .transparent-wrapper {
         transition: opacity 0.4s ease;
       }
@@ -863,6 +1223,7 @@
         pointer-events: none;
       }
 
+      /* Primary Action Button completely hardware accelerated against text snapping */
       .btn-action {
         width: 100%;
         background: var(--primary);
@@ -877,21 +1238,27 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        backface-visibility: hidden;
+        transform: translate3d(0, 0, 0);
+        will-change: transform, box-shadow, background-color;
+        transition:
+          transform 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+          box-shadow 0.3s cubic-bezier(0.25, 1, 0.5, 1),
+          background-color 0.3s ease;
       }
       .btn-action:hover {
         background: var(--primary-hover);
         box-shadow: 0 8px 20px rgba(42, 60, 223, 0.3);
-        transform: translateY(-2px);
+        transform: translate3d(0, -2px, 0);
       }
       .btn-action:active {
-        transform: translateY(1px) scale(0.98);
+        transform: translate3d(0, 1px, 0) scale(0.98);
         box-shadow: 0 2px 10px rgba(42, 60, 223, 0.2);
       }
 
-      /* =============================================
+      /* ==============================================
          MODERN CUSTOM COLOR PICKER
-         ============================================= */
+         ============================================== */
       .color-picker-btn {
         width: 100%;
         height: 50px;
@@ -899,32 +1266,25 @@
         border: 1px solid var(--border-subtle);
         cursor: pointer;
         position: relative;
-        overflow: hidden;
+        outline: none;
+        background: #000;
+
+        /* Hardware accel */
         transition:
           border-color 0.3s,
           transform 0.2s,
           box-shadow 0.3s;
-        background: #000;
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: border-color, transform, box-shadow;
       }
       .color-picker-btn:hover {
         border-color: var(--border-hover);
-        transform: scale(1.01);
+        transform: scale(1.01) translate3d(0, 0, 0);
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
       }
       .color-picker-btn:active {
-        transform: scale(0.98);
-      }
-      .color-picker-btn .cp-check-icon {
-        position: absolute;
-        right: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        opacity: 0;
-        transition: opacity 0.2s;
-        color: rgba(255, 255, 255, 0.7);
-      }
-      .color-picker-btn:hover .cp-check-icon {
-        opacity: 1;
+        transform: scale(0.98) translate3d(0, 0, 0);
       }
 
       /* Popup */
@@ -936,6 +1296,7 @@
         border-radius: 16px;
         padding: 18px;
         width: 280px;
+        max-width: calc(100vw - 24px);
         box-shadow:
           0 20px 60px rgba(0, 0, 0, 0.7),
           0 0 0 1px rgba(255, 255, 255, 0.04);
@@ -956,6 +1317,8 @@
         overflow: hidden;
         margin-bottom: 14px;
         flex-shrink: 0;
+        /* MOBILE FIX: Prevent page scroll when interacting with color picker */
+        touch-action: none;
       }
       .cp-sat-area canvas {
         width: 100%;
@@ -972,9 +1335,10 @@
         box-shadow:
           0 0 0 1.5px rgba(0, 0, 0, 0.5),
           0 2px 8px rgba(0, 0, 0, 0.6);
-        transform: translate(-50%, -50%);
+        transform: translate3d(-50%, -50%, 0);
         pointer-events: none;
         transition: box-shadow 0.15s;
+        touch-action: none;
       }
 
       /* Sliders row */
@@ -993,9 +1357,7 @@
         width: 32px;
         height: 32px;
         border-radius: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.12);
         flex-shrink: 0;
-        box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.3);
       }
       .cp-hue-track {
         flex: 1;
@@ -1003,7 +1365,7 @@
         border-radius: 7px;
         position: relative;
         cursor: pointer;
-        margin: 0 10px; /* Offset the track to prevent thumb overflow */
+        margin: 0 10px;
         background: linear-gradient(
           to right,
           #ff0000,
@@ -1020,6 +1382,17 @@
           #ff0080,
           #ff0000
         );
+        /* MOBILE FIX: Prevent page scroll when interacting with hue slider */
+        touch-action: none;
+      }
+      .cp-hue-track::before {
+        content: "";
+        position: absolute;
+        top: -10px;
+        bottom: -10px;
+        left: -10px;
+        right: -10px;
+        z-index: 0;
       }
       .cp-thumb {
         position: absolute;
@@ -1032,12 +1405,15 @@
         box-shadow:
           0 1px 6px rgba(0, 0, 0, 0.6),
           0 0 0 1px rgba(0, 0, 0, 0.2);
-        transform: translate(-50%, -50%);
+        backface-visibility: hidden;
+        transform: translate3d(-50%, -50%, 0);
         pointer-events: none;
         transition: transform 0.1s;
+        z-index: 1;
+        touch-action: none;
       }
       .cp-hue-track:active .cp-thumb {
-        transform: translate(-50%, -50%) scale(1.15);
+        transform: translate3d(-50%, -50%, 0) scale(1.15);
       }
 
       /* Inputs */
@@ -1101,35 +1477,211 @@
         border-radius: 50%;
         border: 2px solid transparent;
         cursor: pointer;
+        flex-shrink: 0;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+
+        /* Hardware accel */
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
         transition:
           transform 0.15s,
           border-color 0.15s;
-        flex-shrink: 0;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+        will-change: transform, border-color;
       }
       .cp-preset:hover {
-        transform: scale(1.25);
+        transform: scale(1.25) translate3d(0, 0, 0);
         border-color: rgba(255, 255, 255, 0.4);
       }
 
-      /* Swatch inside drag container */
+      /* Modern Gradient Popup Swatch (NO BORDER) */
       .color-swatch-wrapper .cp-swatch-display {
-        width: 26px;
-        height: 26px;
-        border-radius: 50%;
-        border: 2px solid rgba(255, 255, 255, 0.15);
+        width: 28px;
+        height: 28px;
+        border-radius: var(--radius-sm);
         cursor: pointer;
         flex-shrink: 0;
-        transition: transform 0.15s;
         box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+
+        /* Hardware accel */
+        transform: translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        transition:
+          transform 0.15s,
+          box-shadow 0.2s;
+        will-change: transform, box-shadow;
       }
       .color-swatch-wrapper .cp-swatch-display:hover {
-        transform: scale(1.1);
+        transform: scale(1.05) translate3d(0, 0, 0);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      }
+
+      /* ==============================================
+         ADVERTISEMENT BANNER
+         ============================================== */
+      .ad-bar-container {
+        width: 100%;
+        max-width: 1000px;
+        margin: 40px auto;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 120px;
+        position: relative;
+        z-index: 10;
+        overflow: hidden;
+        animation: fadeSlideUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+      .ad-label {
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        position: absolute;
+        top: 10px;
+        left: 12px;
+      }
+      .ad-placeholder-text {
+        color: var(--text-muted);
+        font-weight: 500;
+        opacity: 0.6;
+        text-align: center;
+        padding: 0 16px;
+      }
+
+      /* ==============================================
+         FAQ SECTION
+         ============================================== */
+      .faq-section {
+        width: 100%;
+        max-width: 1000px;
+        margin: 0 auto 60px auto;
+        position: relative;
+        z-index: 5;
+        animation: fadeSlideUp 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+      .faq-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 24px;
+        text-align: center;
+        color: var(--text-main);
+      }
+      .faq-item {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-subtle);
+        border-radius: var(--radius-md);
+        margin-bottom: 12px;
+        overflow: hidden;
+        transition: border-color 0.3s ease;
+      }
+      .faq-item:hover {
+        border-color: var(--border-hover);
+      }
+      .faq-item summary {
+        padding: 18px 20px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        list-style: none;
+        color: var(--text-main);
+        user-select: none;
+      }
+      .faq-item summary::-webkit-details-marker {
+        display: none;
+      }
+      .faq-icon {
+        width: 20px;
+        height: 20px;
+        color: var(--primary);
+        flex-shrink: 0;
+
+        /* Hardware Accel */
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transform: rotate(0deg) translate3d(0, 0, 0);
+        backface-visibility: hidden;
+        will-change: transform;
+      }
+      .faq-item[open] .faq-icon {
+        transform: rotate(180deg) translate3d(0, 0, 0);
+      }
+      .faq-content {
+        padding: 0 20px 20px 20px;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        animation: fadeIn 0.3s ease forwards;
       }
 
       @media (max-width: 900px) {
         .workspace {
           grid-template-columns: 1fr;
+        }
+        /* Cancel sticky behavior on mobile screens so it doesn't cover settings */
+        .preview-panel {
+          position: relative;
+          top: auto;
+          z-index: 1;
+        }
+      }
+
+      /* Ultimate Zoom & Mobile Layout Fixes */
+      @media (max-width: 480px) {
+        .main-content {
+          padding: 24px 16px;
+        }
+        .hero h1 {
+          font-size: 2rem;
+        }
+        .hero p {
+          font-size: 0.9rem;
+        }
+        .preview-panel {
+          padding: 24px 16px;
+        }
+        .preview-box {
+          padding: 16px;
+        }
+        .settings-panel {
+          padding: 16px;
+        }
+        .input-grid-2 {
+          grid-template-columns: 1fr;
+        }
+        .dropzone-inner {
+          flex-direction: column;
+          text-align: center;
+          padding: 16px;
+          gap: 8px;
+        }
+        .dropzone-title,
+        .dropzone-sub,
+        #dropzone-filename {
+          white-space: normal;
+          word-break: break-word;
+        }
+        .bg-header-flex {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+        }
+        .faq-item summary {
+          padding: 16px;
+          gap: 12px;
+          font-size: 0.9rem;
+        }
+        .faq-content {
+          padding: 0 16px 16px 16px;
+        }
+        .tab-label,
+        .segmented-control label {
+          font-size: 0.75rem;
         }
       }
     </style>
@@ -1142,14 +1694,10 @@
       </div>
 
       <form id="qr-form" class="qr-form" aria-label="QR Settings">
-        <!-- ======================= -->
-        <!-- MAIN WORKSPACE LAYOUT   -->
-        <!-- ======================= -->
         <div class="workspace">
           <!-- LEFT PANEL: Preview -->
           <div class="preview-panel">
             <div class="preview-box" aria-live="polite">
-              <!-- Dummy QR Code Vector -->
               <svg
                 width="100%"
                 height="100%"
@@ -1251,10 +1799,9 @@
           </div>
 
           <!-- RIGHT PANEL: Settings Card -->
-          <div class="settings-panel">
+          <div class="settings-panel" id="main-settings-panel">
             <h2 class="settings-title">Settings</h2>
 
-            <!-- Hidden Radios to control Tabs -->
             <input
               type="radio"
               name="main-tab"
@@ -1265,7 +1812,6 @@
             <input type="radio" name="main-tab" id="tab2" class="sr-only" />
             <input type="radio" name="main-tab" id="tab3" class="sr-only" />
 
-            <!-- The Visual Tabs with sliding indicator -->
             <div class="tabs">
               <label for="tab1" class="tab-label">Content</label>
               <label for="tab2" class="tab-label">Design</label>
@@ -1300,20 +1846,22 @@
                       </svg>
                       <span>Link / Text</span>
                     </div>
-                    <svg
-                      class="select-arrow"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
+                    <div class="select-arrow">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </div>
                   </div>
                   <div class="custom-select-menu">
-                    <!-- Link / Text -->
                     <div class="cs-item selected" data-value="link">
                       <svg
                         viewBox="0 0 24 24"
@@ -1332,7 +1880,6 @@
                       </svg>
                       Link / Text
                     </div>
-                    <!-- Social Media -->
                     <div class="cs-item" data-value="social">
                       <svg
                         viewBox="0 0 24 24"
@@ -1350,7 +1897,6 @@
                       </svg>
                       Social Media
                     </div>
-                    <!-- V-Card -->
                     <div class="cs-item" data-value="vcard">
                       <svg
                         viewBox="0 0 24 24"
@@ -1370,7 +1916,6 @@
                       </svg>
                       V-Card
                     </div>
-                    <!-- E-mail -->
                     <div class="cs-item" data-value="email">
                       <svg
                         viewBox="0 0 24 24"
@@ -1387,7 +1932,6 @@
                       </svg>
                       E-mail
                     </div>
-                    <!-- Wi-Fi -->
                     <div class="cs-item" data-value="wifi">
                       <svg
                         viewBox="0 0 24 24"
@@ -1404,7 +1948,6 @@
                       </svg>
                       Wi-Fi
                     </div>
-                    <!-- SMS -->
                     <div class="cs-item" data-value="sms">
                       <svg
                         viewBox="0 0 24 24"
@@ -1420,7 +1963,6 @@
                       </svg>
                       SMS
                     </div>
-                    <!-- Call -->
                     <div class="cs-item" data-value="call">
                       <svg
                         viewBox="0 0 24 24"
@@ -1483,17 +2025,20 @@
                           </svg>
                           <span>YouTube</span>
                         </div>
-                        <svg
-                          class="select-arrow"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                        >
-                          <path d="M6 9l6 6 6-6" />
-                        </svg>
+                        <div class="select-arrow">
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                          </svg>
+                        </div>
                       </div>
                       <div class="custom-select-menu">
                         <div class="cs-item selected" data-value="youtube">
@@ -1770,17 +2315,20 @@
                         <div class="custom-select-value">
                           <span>WPA/WPA2</span>
                         </div>
-                        <svg
-                          class="select-arrow"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          stroke-width="2"
-                        >
-                          <path d="M6 9l6 6 6-6" />
-                        </svg>
+                        <div class="select-arrow">
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                          >
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                          </svg>
+                        </div>
                       </div>
                       <div class="custom-select-menu">
                         <div class="cs-item selected" data-value="wpa">
@@ -1851,21 +2399,90 @@
 
               <div class="form-group" style="margin-top: 24px">
                 <label>Center Logo (Optional)</label>
-                <div style="display: flex; gap: 12px; align-items: center">
+
+                <!-- OUTER BOX -->
+                <div class="file-dropzone" id="logo-dropzone">
                   <input
                     type="file"
                     id="logo-upload"
                     accept="image/*"
-                    style="flex: 1"
+                    class="sr-only"
                   />
-                  <button
-                    type="button"
-                    id="btn-remove-logo"
-                    class="btn-remove"
+
+                  <!-- INNER BOX (EMPTY STATE) -->
+                  <div class="dropzone-inner" id="dropzone-content">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="dropzone-icon"
+                    >
+                      <rect
+                        x="3"
+                        y="3"
+                        width="18"
+                        height="18"
+                        rx="2"
+                        ry="2"
+                      ></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+
+                    <!-- PERFECTLY CENTERED TEXT -->
+                    <div class="dropzone-text">
+                      <div class="dropzone-title">Drag & drop files here</div>
+                      <div class="dropzone-sub">or click to upload</div>
+                    </div>
+
+                    <div class="dropzone-pills">
+                      <span class="drop-pill">Image</span>
+                    </div>
+                  </div>
+
+                  <!-- INNER BOX (PICKED STATE) -->
+                  <div
+                    class="dropzone-inner"
+                    id="dropzone-preview"
                     style="display: none"
                   >
-                    Remove
-                  </button>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="preview-icon"
+                    >
+                      <rect
+                        x="3"
+                        y="3"
+                        width="18"
+                        height="18"
+                        rx="2"
+                        ry="2"
+                      ></rect>
+                      <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                      <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+
+                    <!-- PERFECTLY CENTERED TEXT -->
+                    <div id="dropzone-filename">filename.png</div>
+
+                    <button
+                      type="button"
+                      id="btn-remove-logo"
+                      class="btn-remove"
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
 
                 <div
@@ -1910,17 +2527,20 @@
                       </svg>
                       <span>Square</span>
                     </div>
-                    <svg
-                      class="select-arrow"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
+                    <div class="select-arrow">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </div>
                   </div>
                   <div class="custom-select-menu">
                     <div class="cs-item selected" data-value="do-sq">
@@ -2041,17 +2661,20 @@
                       </svg>
                       <span>Square</span>
                     </div>
-                    <svg
-                      class="select-arrow"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
+                    <div class="select-arrow">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </div>
                   </div>
                   <div class="custom-select-menu">
                     <div class="cs-item selected" data-value="csq-sq">
@@ -2175,17 +2798,20 @@
                       </svg>
                       <span>Square</span>
                     </div>
-                    <svg
-                      class="select-arrow"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                    >
-                      <path d="M6 9l6 6 6-6" />
-                    </svg>
+                    <div class="select-arrow">
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </div>
                   </div>
                   <div class="custom-select-menu">
                     <div class="cs-item selected" data-value="cd-sq">
@@ -2306,26 +2932,11 @@
                     style="background: #000000"
                     role="button"
                     aria-label="Dots Color"
-                  >
-                    <svg
-                      class="cp-check-icon"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                    >
-                      <path
-                        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-                      />
-                      <polyline points="9 11 12 14 22 4" />
-                    </svg>
-                  </div>
+                  ></div>
                 </div>
 
                 <div class="mode-content gradient-mode">
-                  <div class="segmented-control small-seg">
+                  <div class="segmented-control">
                     <input
                       type="radio"
                       name="dc_gtype"
@@ -2432,26 +3043,11 @@
                     style="background: #000000"
                     role="button"
                     aria-label="Corners Square Color"
-                  >
-                    <svg
-                      class="cp-check-icon"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                    >
-                      <path
-                        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-                      />
-                      <polyline points="9 11 12 14 22 4" />
-                    </svg>
-                  </div>
+                  ></div>
                 </div>
 
                 <div class="mode-content gradient-mode">
-                  <div class="segmented-control small-seg">
+                  <div class="segmented-control">
                     <input
                       type="radio"
                       name="csc_gtype"
@@ -2562,26 +3158,11 @@
                     style="background: #000000"
                     role="button"
                     aria-label="Corners Dot Color"
-                  >
-                    <svg
-                      class="cp-check-icon"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2.5"
-                    >
-                      <path
-                        d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-                      />
-                      <polyline points="9 11 12 14 22 4" />
-                    </svg>
-                  </div>
+                  ></div>
                 </div>
 
                 <div class="mode-content gradient-mode">
-                  <div class="segmented-control small-seg">
+                  <div class="segmented-control">
                     <input
                       type="radio"
                       name="cdc_gtype"
@@ -2709,26 +3290,11 @@
                       style="background: #ffffff"
                       role="button"
                       aria-label="Background Color"
-                    >
-                      <svg
-                        class="cp-check-icon"
-                        width="16"
-                        height="16"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2.5"
-                      >
-                        <path
-                          d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"
-                        />
-                        <polyline points="9 11 12 14 22 4" />
-                      </svg>
-                    </div>
+                    ></div>
                   </div>
 
                   <div class="mode-content gradient-mode">
-                    <div class="segmented-control small-seg">
+                    <div class="segmented-control">
                       <input
                         type="radio"
                         name="bg_gtype"
@@ -2803,9 +3369,134 @@
           </div>
         </div>
       </form>
+
+      <!-- ADVERTISEMENT SECTION -->
+      <div class="ad-bar-container">
+        <div class="ad-label">Advertisement</div>
+        <div class="ad-placeholder-text">728 x 90 Leaderboard Ad Area</div>
+      </div>
+
+      <!-- FAQ SECTION -->
+      <section class="faq-section">
+        <h2 class="faq-title">Frequently Asked Questions</h2>
+
+        <details class="faq-item">
+          <summary>
+            Are these generated QR codes free to use?
+            <svg
+              class="faq-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="faq-content">
+            Yes! All QR codes generated on this platform are completely free for
+            both personal and commercial use. There are no hidden fees,
+            subscriptions, or watermarks.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            Do these QR codes ever expire?
+            <svg
+              class="faq-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="faq-content">
+            No. We generate static QR codes, which means your text or URL is
+            encoded directly into the image itself. Because it doesn't rely on
+            our servers to redirect, they will never expire and will work
+            forever.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            Which file format should I download?
+            <svg
+              class="faq-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="faq-content">
+            PNG and JPG formats are great for web use, emails, and social media.
+            If you are printing your QR code on a business card, poster, or
+            billboard, we highly recommend downloading the SVG or EPS vector
+            formats so they can be scaled infinitely without losing quality.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            Can I track how many people scan my QR code?
+            <svg
+              class="faq-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="faq-content">
+            Static QR codes do not have built-in tracking capabilities. If you
+            need scan analytics, you can use a third-party link shortener (like
+            Bitly) as your destination URL, and generate the QR code using that
+            shortened link.
+          </div>
+        </details>
+
+        <details class="faq-item">
+          <summary>
+            Why won't my custom QR code scan?
+            <svg
+              class="faq-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </summary>
+          <div class="faq-content">
+            The most common reason a code won't scan is a lack of contrast. Make
+            sure your background color is significantly lighter than your dot
+            colors. Additionally, verify that your uploaded center logo isn't so
+            large that it covers up critical data patterns in the code.
+          </div>
+        </details>
+      </section>
     </main>
 
-    <!-- Color Picker Popup (shared, moved via JS) -->
+    <!-- Color Picker Popup -->
     <div class="cp-popup" id="cp-popup">
       <div class="cp-sat-area" id="cp-sat">
         <canvas id="cp-canvas"></canvas>
@@ -2867,12 +3558,64 @@
 
     <!-- UI Logic Scripts -->
     <script>
+      // Prevent browser from inching the scroll position down on refresh due to animated content
+      if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+      }
+
       document.addEventListener("DOMContentLoaded", () => {
+        // Enforce scroll to top on exact load
+        window.scrollTo(0, 0);
+
+        // PREVENT SCROLL-JUMP ON TABS AND PILLS
+        // This stops the browser from forcibly scrolling to invisible radio/checkbox inputs when labels are clicked
+        document.querySelectorAll("label[for]").forEach(label => {
+          label.addEventListener("click", function (e) {
+            const inputId = this.getAttribute("for");
+            if (!inputId) return;
+            const input = document.getElementById(inputId);
+
+            // Only intercept for our sr-only hidden inputs that cause scroll jumps
+            if (input && input.classList.contains("sr-only")) {
+              e.preventDefault(); // Stop native label focus jump behavior
+
+              if (input.type === "radio" && !input.checked) {
+                input.checked = true;
+                input.dispatchEvent(new Event("change", { bubbles: true }));
+              } else if (input.type === "checkbox") {
+                input.checked = !input.checked;
+                input.dispatchEvent(new Event("change", { bubbles: true }));
+              }
+            }
+          });
+        });
+
         const deleteSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
         const dragHandleSvg = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>`;
         const arrowSvg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="13 17 18 12 13 7"></polyline><polyline points="6 17 11 12 6 7"></polyline></svg>`;
 
         // === CUSTOM DROPDOWN LOGIC ===
+        const closeAllSelects = () => {
+          document
+            .querySelectorAll(".js-custom-select.open")
+            .forEach(wrapper => {
+              wrapper.classList.remove("open");
+              wrapper.style.zIndex = "";
+
+              const tabContent = wrapper.closest(".tab-content");
+              if (tabContent) tabContent.style.zIndex = "";
+
+              const dynamicSec = wrapper.closest(".dynamic-section");
+              if (dynamicSec) dynamicSec.style.zIndex = "";
+
+              const formGrp = wrapper.closest(".form-group");
+              if (formGrp) formGrp.style.zIndex = "";
+
+              const trigger = wrapper.querySelector(".custom-select-trigger");
+              if (trigger) trigger.blur();
+            });
+        };
+
         document.querySelectorAll(".js-custom-select").forEach(wrapper => {
           const trigger = wrapper.querySelector(".custom-select-trigger");
           const items = wrapper.querySelectorAll(".cs-item");
@@ -2881,17 +3624,28 @@
 
           trigger.addEventListener("click", e => {
             e.stopPropagation();
-            document
-              .querySelectorAll(".js-custom-select.open")
-              .forEach(other => {
-                if (other !== wrapper) other.classList.remove("open");
-              });
+            const isOpen = wrapper.classList.contains("open");
 
-            if (wrapper.classList.contains("open")) {
-              wrapper.classList.remove("open");
-              trigger.blur();
-            } else {
+            closeAllSelects();
+
+            if (!isOpen) {
               wrapper.classList.add("open");
+              wrapper.style.zIndex = "99999";
+
+              const tabContent = wrapper.closest(".tab-content");
+              if (tabContent) {
+                tabContent.style.position = "relative";
+                tabContent.style.zIndex = "999";
+              }
+
+              const dynamicSec = wrapper.closest(".dynamic-section");
+              if (dynamicSec) dynamicSec.style.zIndex = "9999";
+
+              const formGrp = wrapper.closest(".form-group");
+              if (formGrp) {
+                formGrp.style.position = "relative";
+                formGrp.style.zIndex = "9999";
+              }
             }
           });
 
@@ -2909,8 +3663,8 @@
 
               hiddenInput.value = value;
               valueDisplay.innerHTML = `${iconHtml}<span>${text}</span>`;
-              wrapper.classList.remove("open");
-              trigger.blur();
+
+              closeAllSelects();
 
               if (wrapper.id === "template-dropdown-wrapper") {
                 document
@@ -2927,47 +3681,80 @@
         });
 
         document.addEventListener("click", e => {
-          document.querySelectorAll(".js-custom-select").forEach(wrapper => {
-            if (!wrapper.contains(e.target)) wrapper.classList.remove("open");
-          });
+          const openSelects = document.querySelectorAll(
+            ".js-custom-select.open",
+          );
+          if (openSelects.length > 0) {
+            let clickedInside = false;
+            openSelects.forEach(wrapper => {
+              if (wrapper.contains(e.target)) clickedInside = true;
+            });
+            if (!clickedInside) {
+              closeAllSelects();
+            }
+          }
         });
 
         document.addEventListener("keydown", e => {
           if (e.key === "Escape") {
-            document
-              .querySelectorAll(".js-custom-select.open")
-              .forEach(wrapper => {
-                wrapper.classList.remove("open");
-                wrapper.querySelector(".custom-select-trigger").blur();
-              });
+            closeAllSelects();
           }
         });
 
-        // === CENTER LOGO LOGIC ===
+        // === DRAG & DROP LOGO LOGIC ===
+        const dropzone = document.getElementById("logo-dropzone");
         const logoUpload = document.getElementById("logo-upload");
         const btnRemoveLogo = document.getElementById("btn-remove-logo");
         const logoOptions = document.getElementById("logo-options");
+        const dropzoneContent = document.getElementById("dropzone-content");
+        const dropzonePreview = document.getElementById("dropzone-preview");
+        const dropzoneFilename = document.getElementById("dropzone-filename");
         let lastSelectedFile = null;
 
-        logoUpload.addEventListener("change", e => {
-          if (e.target.files && e.target.files.length > 0) {
-            lastSelectedFile = e.target.files[0];
-            btnRemoveLogo.style.display = "inline-block";
-            logoOptions.classList.add("active");
-          } else if (lastSelectedFile) {
-            const dataTransfer = new DataTransfer();
-            dataTransfer.items.add(lastSelectedFile);
-            logoUpload.files = dataTransfer.files;
-          } else {
-            btnRemoveLogo.style.display = "none";
-            logoOptions.classList.remove("active");
+        dropzone.addEventListener("click", e => {
+          if (e.target !== btnRemoveLogo) {
+            logoUpload.click();
           }
         });
 
-        btnRemoveLogo.addEventListener("click", () => {
+        dropzone.addEventListener("dragover", e => {
+          e.preventDefault();
+          dropzone.classList.add("dragover");
+        });
+
+        dropzone.addEventListener("dragleave", () => {
+          dropzone.classList.remove("dragover");
+        });
+
+        dropzone.addEventListener("drop", e => {
+          e.preventDefault();
+          dropzone.classList.remove("dragover");
+          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            logoUpload.files = e.dataTransfer.files;
+            handleFileChange(e.dataTransfer.files[0]);
+          }
+        });
+
+        logoUpload.addEventListener("change", e => {
+          if (e.target.files && e.target.files.length > 0) {
+            handleFileChange(e.target.files[0]);
+          }
+        });
+
+        function handleFileChange(file) {
+          lastSelectedFile = file;
+          dropzoneFilename.textContent = file.name;
+          dropzoneContent.style.display = "none";
+          dropzonePreview.style.display = "flex";
+          logoOptions.classList.add("active");
+        }
+
+        btnRemoveLogo.addEventListener("click", e => {
+          e.stopPropagation();
           logoUpload.value = "";
           lastSelectedFile = null;
-          btnRemoveLogo.style.display = "none";
+          dropzoneContent.style.display = "flex";
+          dropzonePreview.style.display = "none";
           logoOptions.classList.remove("active");
         });
 
@@ -3244,6 +4031,7 @@
 
         function updateHueThumb() {
           hueThumb.style.left = (currentHue / 360) * 100 + "%";
+          hueThumb.style.background = `hsl(${currentHue}, 100%, 50%)`;
         }
 
         function updatePreview() {
@@ -3395,25 +4183,38 @@
 
           popup.classList.add("visible");
           requestAnimationFrame(() => {
-            const rect = btn.getBoundingClientRect();
+            const targetEl = btn._swatchRef || btn;
+            const rect = targetEl.getBoundingClientRect();
+
             const pw = popup.offsetWidth,
               ph = popup.offsetHeight;
-            let left = rect.left;
-            let top = rect.bottom + 8;
+            let left, top;
 
-            // X Axis Boundaries
-            if (left + pw > window.innerWidth - 12)
-              left = window.innerWidth - pw - 12;
-            if (left < 12) left = 12;
+            // Centering the popup dialog strictly on mobile screens
+            // This completely prevents it from accidentally getting pushed off the screen boundary
+            if (window.innerWidth <= 480) {
+              left = window.innerWidth / 2 - pw / 2;
+              top = window.innerHeight / 2 - ph / 2;
+            } else {
+              // Perfectly center popup relative to the Main Settings Panel
+              const panel = document.getElementById("main-settings-panel");
+              const panelRect = panel.getBoundingClientRect();
 
-            // Y Axis Boundaries
-            if (top + ph > window.innerHeight - 12) {
-              // Try placing it above the element
-              top = rect.top - ph - 8;
-              // If it spills off the top, force cap
-              if (top < 12) {
-                top = window.innerHeight - ph - 12;
-                if (top < 12) top = 12;
+              // Center horizontally based on the settings panel
+              left = panelRect.left + panelRect.width / 2 - pw / 2;
+              top = rect.bottom + 12;
+
+              // Failsafe Bounds
+              if (left + pw > window.innerWidth - 12)
+                left = window.innerWidth - pw - 12;
+              if (left < 12) left = 12;
+
+              if (top + ph > window.innerHeight - 12) {
+                top = rect.top - ph - 12;
+                if (top < 12) {
+                  top = window.innerHeight - ph - 12;
+                  if (top < 12) top = 12;
+                }
               }
             }
 
@@ -3453,8 +4254,66 @@
 
         popup.addEventListener("click", e => e.stopPropagation());
 
-        // === MODERN DRAG & DROP LOGIC ===
-        function createGradientSwatch(colorValue = "#000000") {
+        // === BUTTERY SMOOTH FLIP-ANIMATED GRADIENT SYSTEM ===
+
+        // Reusable FLIP (First, Last, Invert, Play) function for flawless layout transitions
+        function animateLayout(container, action) {
+          // 1. Record 'First' bounding rects for all children
+          const children = Array.from(container.children);
+          const firstRects = new Map();
+          children.forEach(c => firstRects.set(c, c.getBoundingClientRect()));
+
+          // Execute DOM changes synchronously
+          action();
+
+          // 2. Record 'Last' bounding rects
+          const newChildren = Array.from(container.children);
+          newChildren.forEach(child => {
+            const first = firstRects.get(child);
+            const last = child.getBoundingClientRect();
+
+            // 3. Invert and Play only elements that existed and moved
+            if (first && last) {
+              const dx = first.left - last.left;
+              const dy = first.top - last.top;
+
+              if (dx !== 0 || dy !== 0) {
+                // Invert instantly
+                child.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+                child.style.transition = "none";
+
+                // Play smoothly over next frames using customized bezier bounce
+                requestAnimationFrame(() => {
+                  requestAnimationFrame(() => {
+                    child.style.transition =
+                      "transform 0.4s cubic-bezier(0.25, 1.25, 0.5, 1)";
+                    child.style.transform = "translate3d(0,0,0)";
+                  });
+                });
+              }
+            }
+          });
+
+          // Cleanup transition tags when done
+          setTimeout(() => {
+            newChildren.forEach(c => {
+              if (
+                c.style.transform === "translate3d(0px, 0px, 0px)" ||
+                c.style.transform === "translate3d(0,0,0)"
+              ) {
+                c.style.transform = "translate3d(0,0,0)";
+                c.style.transition = "";
+              }
+            });
+          }, 450);
+        }
+
+        function createGradientSwatchGroup(colorValue = "#000000") {
+          // Master group containing exactly one Color Pill and one Arrow
+          const group = document.createElement("div");
+          group.className = "swatch-group";
+
+          // --- Inner Colored Wrapper Pill ---
           const wrapper = document.createElement("div");
           wrapper.className = "color-swatch-wrapper";
 
@@ -3462,12 +4321,10 @@
           handle.className = "drag-handle";
           handle.innerHTML = dragHandleSvg;
 
-          // Mini color button (circular display)
           const swatchDisp = document.createElement("div");
           swatchDisp.className = "cp-swatch-display";
           swatchDisp.style.background = colorValue;
 
-          // Hidden btn reference for picker
           const fakeBtn = document.createElement("div");
           fakeBtn.dataset.value = colorValue;
           fakeBtn.style.display = "none";
@@ -3481,29 +4338,6 @@
               return;
             }
             openPicker(fakeBtn);
-            // reposition near the swatch
-            requestAnimationFrame(() => {
-              const rect = swatchDisp.getBoundingClientRect();
-              const pw = popup.offsetWidth,
-                ph = popup.offsetHeight;
-              let left = rect.left;
-              let top = rect.bottom + 8;
-
-              if (left + pw > window.innerWidth - 12)
-                left = window.innerWidth - pw - 12;
-              if (left < 12) left = 12;
-
-              if (top + ph > window.innerHeight - 12) {
-                top = rect.top - ph - 8;
-                if (top < 12) {
-                  top = window.innerHeight - ph - 12;
-                  if (top < 12) top = 12;
-                }
-              }
-
-              popup.style.left = left + "px";
-              popup.style.top = top + "px";
-            });
           });
 
           const delBtn = document.createElement("button");
@@ -3513,17 +4347,35 @@
           delBtn.title = "Remove Color";
 
           delBtn.addEventListener("click", () => {
-            const container = wrapper.parentElement;
-            if (
-              container.querySelectorAll(".color-swatch-wrapper:not(.ghost)")
-                .length > 1
-            ) {
-              wrapper.style.transform = "scale(0)";
-              wrapper.style.opacity = "0";
-              setTimeout(() => {
-                wrapper.remove();
-                if (container._updateArrows) container._updateArrows();
-              }, 200);
+            const container = group.parentElement;
+            if (container.querySelectorAll(".swatch-group").length > 1) {
+              // Only clone the PILL (wrapper) so the Arrow instantly disappears,
+              // giving the [+] button a completely clear path to smoothly slide left.
+              const rect = wrapper.getBoundingClientRect();
+              const clone = wrapper.cloneNode(true);
+              document.body.appendChild(clone);
+              clone.style.position = "fixed";
+              clone.style.top = rect.top + "px";
+              clone.style.left = rect.left + "px";
+              clone.style.width = rect.width + "px";
+              clone.style.height = rect.height + "px";
+              clone.style.margin = "0";
+              clone.style.zIndex = "9999";
+              clone.style.pointerEvents = "none";
+              clone.style.transition =
+                "all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1)";
+
+              requestAnimationFrame(() => {
+                clone.style.opacity = "0";
+                clone.style.transform = "scale(0.5) translateZ(0)";
+              });
+              setTimeout(() => clone.remove(), 250);
+
+              // Use FLIP to animate sibling elements seamlessly into the gap
+              animateLayout(container, () => {
+                group.remove();
+                updateCount(container); // Instant count update for instantaneous hide/show
+              });
             }
           });
 
@@ -3531,13 +4383,20 @@
           wrapper.appendChild(swatchDisp);
           wrapper.appendChild(fakeBtn);
           wrapper.appendChild(delBtn);
-          return wrapper;
+
+          // --- Embedded Separating Arrow ---
+          const arrow = document.createElement("div");
+          arrow.className = "stop-arrow";
+          arrow.innerHTML = arrowSvg;
+
+          group.appendChild(wrapper);
+          group.appendChild(arrow);
+
+          return group;
         }
 
         function updateCount(container) {
-          const count = container.querySelectorAll(
-            ".color-swatch-wrapper:not(.ghost)",
-          ).length;
+          const count = container.querySelectorAll(".swatch-group").length;
           container.setAttribute("data-count", count);
         }
 
@@ -3546,51 +4405,42 @@
           if (!container) return;
           const addBtn = container.querySelector(".btn-add-color");
 
-          function updateArrows() {
-            container
-              .querySelectorAll(".stop-arrow")
-              .forEach(el => el.remove());
-            const swatches = Array.from(
-              container.querySelectorAll(".color-swatch-wrapper:not(.ghost)"),
-            );
+          // Initialize defaults seamlessly
+          container.insertBefore(
+            createGradientSwatchGroup(defaultColor1),
+            addBtn,
+          );
+          container.insertBefore(
+            createGradientSwatchGroup(defaultColor2),
+            addBtn,
+          );
+          updateCount(container);
 
-            swatches.forEach((swatch, index) => {
-              if (index < swatches.length - 1) {
-                const arrow = document.createElement("div");
-                arrow.className = "stop-arrow";
-                arrow.innerHTML = arrowSvg;
-                swatch.after(arrow);
-              }
-            });
-            updateCount(container);
-          }
-          container._updateArrows = updateArrows;
-
-          // Initialize default colors
-          container.insertBefore(createGradientSwatch(defaultColor1), addBtn);
-          container.insertBefore(createGradientSwatch(defaultColor2), addBtn);
-          updateArrows();
-
-          // Add button click
           addBtn.addEventListener("click", () => {
-            const newSwatch = createGradientSwatch(defaultColor1);
-            newSwatch.style.opacity = "0";
-            newSwatch.style.transform = "scale(0.8)";
-            container.insertBefore(newSwatch, addBtn);
+            const group = createGradientSwatchGroup(defaultColor1);
 
-            requestAnimationFrame(() => {
-              newSwatch.style.transition = "all 0.3s ease";
-              newSwatch.style.opacity = "1";
-              newSwatch.style.transform = "scale(1)";
-              setTimeout(() => {
-                newSwatch.style.transition =
-                  "transform 0.2s, border-color 0.2s";
-              }, 300);
+            // Set up pre-animation state
+            group.style.opacity = "0";
+            group.style.transform = "scale(0.5) translateZ(0)";
+            group.style.transition =
+              "all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)";
+
+            // Use FLIP to smoothly adjust siblings around the new addition
+            animateLayout(container, () => {
+              container.insertBefore(group, addBtn);
+              updateCount(container); // Instant count update
             });
-            updateArrows();
+
+            // Trigger entry bounce for the new group
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => {
+                group.style.opacity = "1";
+                group.style.transform = "scale(1) translateZ(0)";
+              });
+            });
           });
 
-          // Pointer Custom Drag Logic
+          // Pointer Drag Logic
           let draggingItem = null;
           let ghost = null;
           let startX, startY, initialX, initialY;
@@ -3600,18 +4450,22 @@
             if (!handle) return;
 
             e.preventDefault();
-            draggingItem = handle.closest(".color-swatch-wrapper");
+            draggingItem = handle.closest(".swatch-group");
 
             const rect = draggingItem.getBoundingClientRect();
-            ghost = draggingItem.cloneNode(true);
+            const wrapperTarget = draggingItem.querySelector(
+              ".color-swatch-wrapper",
+            );
+
+            ghost = wrapperTarget.cloneNode(true);
             ghost.classList.add("ghost");
             document.body.appendChild(ghost);
 
             ghost.style.position = "fixed";
             ghost.style.top = rect.top + "px";
             ghost.style.left = rect.left + "px";
-            ghost.style.width = rect.width + "px";
-            ghost.style.height = rect.height + "px";
+            ghost.style.width = wrapperTarget.offsetWidth + "px";
+            ghost.style.height = wrapperTarget.offsetHeight + "px";
             ghost.style.margin = "0";
 
             startX = e.clientX;
@@ -3640,7 +4494,7 @@
             const elements = document.elementsFromPoint(e.clientX, e.clientY);
             const target = elements.find(
               el =>
-                el.classList.contains("color-swatch-wrapper") &&
+                el.classList.contains("swatch-group") &&
                 el !== draggingItem &&
                 !el.classList.contains("ghost"),
             );
@@ -3654,7 +4508,6 @@
               } else {
                 container.insertBefore(draggingItem, target.nextSibling);
               }
-              updateArrows();
             }
           }
 
@@ -3669,8 +4522,6 @@
             document.removeEventListener("pointermove", onPointerMove);
             document.removeEventListener("pointerup", onPointerUp);
             document.removeEventListener("pointercancel", onPointerUp);
-
-            updateArrows();
           }
         }
 
